@@ -105,9 +105,12 @@
                                 <i class="bx bx-dots-vertical-rounded" style="font-size: 1.5rem;"></i>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ $item->id }}">
-                                <li><a class="dropdown-item" href="">Edit</a></li>
                                 <li>
-                                    <form action="" method="POST"
+                                    <a class="dropdown-item" data-bs-toggle="modal"
+                                        data-bs-target="#modal-edit-folder-{{ $item->id }}">Edit</a>
+                                </li>
+                                <li>
+                                    <form action="{{ route('katalog.destroy', ['id' => $item->id]) }}" method="POST"
                                         onsubmit="return confirm('Yakin ingin menghapus item ini?');">
                                         @csrf
                                         @method('DELETE')
@@ -115,11 +118,67 @@
                                     </form>
                                 </li>
                             </ul>
+
+                            <div class="modal fade" id="modal-edit-folder-{{ $item->id }}" tabindex="-1"
+                                aria-labelledby="modal-edit-label" aria-hidden="true">
+                                <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="modal-edit-label">Edit {{ $item->name }}
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="{{ route('katalog.update', ['id' => $item->id]) }}"
+                                                method="POST" enctype="multipart/form-data">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="mb-3">
+                                                    <label for="thumbnail-{{ $item->id }}"
+                                                        class="form-label">Thumbnail</label>
+                                                    <input type="file" class="form-control"
+                                                        id="thumbnail-{{ $item->id }}" name="thumbnail">
+                                                    @if ($item->thumbnail)
+                                                        <img id="thumbnail-preview-{{ $item->id }}"
+                                                            src="{{ asset($item->thumbnail) }}" alt="Preview"
+                                                            style="margin-top:10px; max-width:100px;" />
+                                                    @endif
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label for="name-{{ $item->id }}"
+                                                        class="form-label">Judul</label>
+                                                    <input type="text" class="form-control"
+                                                        id="name-{{ $item->id }}" name="name"
+                                                        value="{{ $item->name }}" required>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label for="description-{{ $item->id }}"
+                                                        class="form-label">Description</label>
+                                                    <textarea class="form-control" id="description-{{ $item->id }}" name="description" rows="3" required>{{ $item->description }}</textarea>
+                                                </div>
+
+                                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                                    <button type="submit" class="btn btn-primary">Update</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <h5 class="card-title"
                             style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; text-align: left;">
-                            {{ $item->name }}
+                            @php
+                                if (strlen($item->name) > 15) {
+                                    echo substr($item->name, 0, 15) . '...';
+                                } else {
+                                    echo $item->name;
+                                }
+                            @endphp
                         </h5>
                     </div>
 
@@ -134,7 +193,13 @@
                     <div class="card-body" style="padding: 8px;">
                         <p class="card-text"
                             style="color: #6c757d; font-size: 0.8rem; text-align: left; margin-top: 6px;">
-                            {{ $item->description }}
+                            @php
+                                if (strlen($item->description) > 21) {
+                                    echo substr($item->description, 0, 21) . '...';
+                                } else {
+                                    echo $item->description;
+                                }
+                            @endphp
                         </p>
                     </div>
                 </div>
@@ -142,14 +207,29 @@
         </div>
     @endif
 
-    <div class="small-modal" id="smallImageModal">
-        <div class="modal-content">
-            <img id="smallModalImage" src="" alt="" class="img-fluid mb-2">
-            <h6 id="smallModalTitle"></h6>
-            <p id="smallModalDescription" class="small"></p>
+    {{-- <div id="smallImageModal">
+        <div class="grid-item card"
+            style="background-color: white; border-radius: 8px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); max-width: 180px; padding: 8px; position: relative;">
+            <div style="width: 100%; height: 150px; overflow: hidden; border-radius: 6px;">
+                <h5 id="smallModalTitle"></h5>
+                <img id="smallModalImage">
+            </div>
+            <div class="card-body" style="padding: 8px;">
+                <p id="smallModalDescription" class="card-text" style="color: #6c757d; font-size: 0.8rem; text-align: left; margin-top: 6px;">
+                </p>
+            </div>
+        </div>
+    </div> --}}
+
+    <div id="smallImageModal">
+        <img id="smallModalImage" style="width: 100%; height: auto; object-fit: contain; border-radius: 8px;">
+        <div class="card-body" style="padding: 10px;">
+            <h5 id="smallModalTitle" style="padding: 5px 0; text-align: justify;"></h5>
+            <p id="smallModalDescription" class="card-text" style="font-size: 0.9rem; text-align: justify; color: #6c757d;">
+            </p>
         </div>
     </div>
-
+    
     <script>
         function showSmallModal(image, title, description, element) {
             document.getElementById('smallModalImage').src = image;
@@ -158,23 +238,15 @@
 
             const rect = element.getBoundingClientRect();
             const modal = document.getElementById('smallImageModal');
+
             modal.style.top = (rect.bottom + window.scrollY) + 'px';
             modal.style.left = rect.left + 'px';
-            modal.style.display = 'block';
+            modal.style.display = 'block'; 
         }
 
         function hideSmallModal() {
-            document.getElementById('smallImageModal').style.display = 'none';
+            document.getElementById('smallImageModal').style.display = 'none'; 
         }
-
-        window.onload = function() {
-            var elem = document.querySelector('.grid');
-            var msnry = new Masonry(elem, {
-                itemSelector: '.grid-item',
-                columnWidth: '.grid-sizer',
-                percentPosition: true
-            });
-        };
     </script>
 
 @endsection

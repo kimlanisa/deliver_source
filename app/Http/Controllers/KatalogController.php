@@ -52,6 +52,36 @@ class KatalogController extends Controller
         }
     }
 
+    public function update(Request $request)
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:1000',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $dataPost = $request->only(['name', 'description']);
+            $dataPost['parents_id'] = $request->parent_id;
+
+            if ($request->hasFile('thumbnail')) {
+                $file = $request->file('thumbnail');
+                $filename = 'thumbnail_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
+                $destinationPath = 'uploads/file/thumbnail';
+                $file->move($destinationPath, $filename);
+                $dataPost['thumbnail'] = $destinationPath . '/' . $filename;
+            }
+
+            $parent = ParentsCategoriesKatalog::findOrFail($request->id);
+            $parent->update($dataPost);
+
+            return redirect()->to(url()->previous())->with('success', 'Berhasil disimpan!');
+        } catch (\Exception $e) {
+            \Log::error("Error occurred while storing the data: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
+        }
+    }
+
     public function storeChild(Request $request)
     {
         try {
@@ -315,6 +345,19 @@ class KatalogController extends Controller
         } catch (\Exception $e) {
             \Log::error("Error occurred while storing the data: " . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $parent = ParentsCategoriesKatalog::findOrFail($id);
+            $parent->delete();
+
+            return redirect()->to(url()->previous())->with('success', 'Berhasil dihapus!');
+        } catch (\Exception $e) {
+            \Log::error("Error occurred while deleting the data: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus data.');
         }
     }
 

@@ -309,14 +309,15 @@
         </div>
     @endif
 
-    <div class="small-modal" id="smallImageModal">
-        <div class="modal-content">
-            <img id="smallModalImage" src="" alt="" class="img-fluid mb-2">
-            <h6 id="smallModalTitle"></h6>
-            <p id="smallModalDescription" class="small"></p>
+    <div id="smallImageModal">
+        <img id="smallModalImage" style="width: 100%; height: auto; object-fit: contain; border-radius: 8px;">
+        <div class="card-body" style="padding: 10px;">
+            <h5 id="smallModalTitle" style="padding: 5px 0; text-align: justify;"></h5>
+            <p id="smallModalDescription" class="card-text" style="font-size: 0.9rem; text-align: justify; color: #6c757d;">
+            </p>
         </div>
     </div>
-
+    
     <script>
         function showSmallModal(image, title, description, element) {
             document.getElementById('smallModalImage').src = image;
@@ -325,22 +326,14 @@
 
             const rect = element.getBoundingClientRect();
             const modal = document.getElementById('smallImageModal');
+
             modal.style.top = (rect.bottom + window.scrollY) + 'px';
             modal.style.left = rect.left + 'px';
-            modal.style.display = 'block';
+            modal.style.display = 'block'; 
         }
 
         function hideSmallModal() {
-            document.getElementById('smallImageModal').style.display = 'none';
+            document.getElementById('smallImageModal').style.display = 'none'; 
         }
-
-        window.onload = function() {
-            var elem = document.querySelector('.grid');
-            var msnry = new Masonry(elem, {
-                itemSelector: '.grid-item',
-                columnWidth: '.grid-sizer',
-                percentPosition: true
-            });
-        };
     </script>
 @endsection

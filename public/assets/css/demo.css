@@ -219,24 +219,6 @@
     transform: scale(1.05); 
 }
 
-.small-modal {
-    margin-top: 16px;
-    display: none;
-    position: absolute;
-    width: 250px;
-    border-radius: 8px;
-    z-index: 1000;
-}
-
-.small-modal .modal-content {
-    text-align: left;
-}
-
-.small-modal img {
-    max-width: 100%;
-    border-radius: 8px;
-}
-
 .grid-item .card img {
     transition: transform 0.3s ease-in-out;
 }
@@ -256,6 +238,48 @@
     margin-left: auto;
     font-size: 16px; 
 }
+
+#smallImageModal {
+    position: absolute;
+    z-index: 1000;
+    display: none;
+    max-width: 200px; /* Lebar modal yang lebih kecil */
+    width: 100%;
+    height: auto;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+#smallImageModal .card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+}
+
+#smallImageModal img {
+    width: 100%;
+    height: auto;
+    object-fit: contain; /* Gambar tidak akan terpotong, tetap proporsional */
+    max-height: 250px; /* Batas tinggi agar gambar tidak terlalu besar */
+}
+
+#smallModalTitle {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#smallModalDescription {
+    font-size: 0.9rem;
+    text-align: justify;
+    margin-top: 12px;
+    color: #6c757d;
+}
+
+
 
 
 
