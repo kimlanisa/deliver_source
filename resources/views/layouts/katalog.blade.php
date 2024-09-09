@@ -62,8 +62,7 @@
                 <div class="menu-inner-shadow"></div>
 
                 <ul class="menu-inner py-1">
-                    <!-- Dashboards -->
-                    <li class="menu-item active open">
+                    <li class="menu-item {{ request()->is('katalog') ? 'active open' : '' }}">
                         <a href="{{ '/katalog' }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-home-smile"></i>
                             <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
@@ -75,7 +74,11 @@
                     @endphp
 
                     @foreach ($folders as $folder)
-                        <li class="menu-item">
+                        @php
+                            $isActiveParent = request()->is('katalog/' . $folder->id . '/*');
+                        @endphp
+
+                        <li class="menu-item {{ $isActiveParent ? 'active open' : '' }}">
                             <a href="javascript:void(0);" class="menu-link menu-toggle">
                                 <i class="menu-icon tf-icons bx bx-collection"></i>
                                 <div class="text-truncate" data-i18n="Layouts">{{ $folder->name }}</div>
@@ -87,10 +90,9 @@
 
                             <ul class="menu-sub">
                                 @foreach ($files as $file)
-                                    <li class="menu-item">
+                                    <li class="menu-item {{ request()->is('katalog/' . $file->id) ? 'active' : '' }}">
                                         <a href="{{ route('katalog.show', $file->id) }}" class="menu-link">
-                                            <div class="text-truncate" data-i18n="Vertical"> {{ $file->name }}
-                                            </div>
+                                            <div class="text-truncate" data-i18n="Vertical">{{ $file->name }}</div>
                                         </a>
                                     </li>
                                 @endforeach
@@ -98,6 +100,7 @@
                         </li>
                     @endforeach
                 </ul>
+
             </aside>
 
             <div class="layout-page">
@@ -123,7 +126,7 @@
 
                         <ul class="navbar-nav flex-row align-items-center ms-auto">
                             <!-- Place this tag where you want the button to render. -->
-                            
+
 
                             {{-- <div class="btn-group dropstart">
                                 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
