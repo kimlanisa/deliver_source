@@ -18,6 +18,40 @@ class KatalogController extends Controller
         return view('katalog.index', compact('data'));
     }
 
+    public function store(Request $request)
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:1000',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $exists = ParentsCategoriesKatalog::where('name', $request->name)->exists();
+            if ($exists) {
+                return redirect()->back()->with('error', 'Kategori sudah ada!');
+            }
+
+            $dataPost = $request->only(['name', 'description']);
+            $dataPost['parents_id'] = $request->parent_id;
+
+            if ($request->hasFile('thumbnail')) {
+                $file = $request->file('thumbnail');
+                $filename = 'thumbnail_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
+                $destinationPath = 'uploads/file/thumbnail';
+                $file->move($destinationPath, $filename);
+                $dataPost['thumbnail'] = $destinationPath . '/' . $filename;
+            }
+
+            $newCategory = ParentsCategoriesKatalog::create($dataPost);
+
+            return redirect()->route('katalog.detail', $newCategory->id)->with('success', 'Berhasil disimpan!');
+        } catch (\Exception $e) {
+            \Log::error("Error occurred while storing the data: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
+        }
+    }
+
     public function storeChild(Request $request)
     {
         try {
@@ -33,7 +67,7 @@ class KatalogController extends Controller
             }
 
             $dataPost = $request->only(['name', 'description']);
-            $dataPost['parents_id'] = $request->parent_id;
+            $dataPost['parents_id'] = $request->parents_id;
 
             if ($request->hasFile('thumbnail')) {
                 $file = $request->file('thumbnail');

@@ -10,7 +10,7 @@ class ChildsCategoriesKatalog extends Model
     use HasFactory;
 
     protected $table = 'childs_categories_katalog';
-    protected $fillable = ['name', 'description', 'thumbnail', 'childs_id'];
+    protected $fillable = ['name', 'description', 'thumbnail', 'parents_id'];
 
     public function child()
     {
@@ -21,12 +21,11 @@ class ChildsCategoriesKatalog extends Model
     {
         return $this->hasMany(GrandChildsCategoriesKatalog::class, 'childs_id');
     }
-    
 
-    // public function photo()
-    // {
-    //     return $this->hasManyThrough(PhotoKatalog::class, GrandChildsCategoriesKatalog::class, 'parents_id', 'grand_childs_id', 'id', 'id');
-    // }
+    public function parent()
+    {
+        return $this->belongsTo(ParentsCategoriesKatalog::class, 'parents_id');
+    }
 
     public function photos()
     {

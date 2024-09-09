@@ -79,7 +79,9 @@ Route::post('/log-activitas/detail', [App\Http\Controllers\LogActivitasControlle
 Route::get('/katalog', [App\Http\Controllers\KatalogController::class, 'index'])->name('katalog');
 Route::post('/katalog/store', [App\Http\Controllers\KatalogController::class, 'store'])->name('katalog.store');
 Route::get('/katalog/{id}/show', [App\Http\Controllers\KatalogController::class, 'show'])->name('katalog.show');
-Route::post('katalog/{parent_id}/store-child', [App\Http\Controllers\KatalogController::class, 'storeChild'])->name('katalog.storeChild');
+// Route::post('katalog/{parents_id}/store-child', [App\Http\Controllers\KatalogController::class, 'storeChild'])->name('katalog.storeChild');
+Route::post('katalog/store-child', [App\Http\Controllers\KatalogController::class, 'storeChild'])->name('katalog.storeChild');
+
 Route::get('/katalog/{parentId}/{childId}/detail', [App\Http\Controllers\KatalogController::class, 'detail'])->name('katalog.detail');
 
 Route::get('/katalog/{childId}', [App\Http\Controllers\KatalogController::class, 'childDetail'])->name('katalog.childDetail');

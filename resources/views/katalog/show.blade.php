@@ -16,15 +16,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('katalog.storeChild', ['parent_id' => $parents->id]) }}" method="POST"
-                        enctype="multipart/form-data">
+                    <form action="{{ route('katalog.storeChild') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="parents_id" value="{{ $parents->id }}">
                         <div class="mb-3">
                             <label for="thumbnail" class="form-label">Thumbnail</label>
                             <input type="file" class="form-control" id="thumbnail" name="thumbnail" required>
-                            <img id="thumbnail-preview" src="#" alt="Preview"
-                                style="display:none; margin-top:10px; max-width:100px;" />
                         </div>
                         <div class="mb-3">
                             <label for="name" class="form-label">Judul</label>
@@ -38,7 +35,6 @@
                             <button type="submit" class="btn btn-primary">Upload</button>
                         </div>
                     </form>
-
                 </div>
             </div>
         </div>
