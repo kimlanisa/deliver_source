@@ -34,7 +34,7 @@
                 <div class="modal-body">
                     <form action="{{ route('katalog.storePhoto') }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        <input type="hidden" name="parents_id" id="hidden-parents-id" value="{{ $parents->id }}">
+                        {{-- <input type="hidden" name="parents_id" id="hidden-parents-id" value="{{ $parents->id }}"> --}}
                         <input type="hidden" name="childs_id" id="hidden-childs-id" value="{{ $childs->id }}">
                         <div class="mb-3">
                             <label for="thumbnail" class="form-label">Thumbnail</label>
