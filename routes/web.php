@@ -81,14 +81,19 @@ Route::post('/katalog/store', [App\Http\Controllers\KatalogController::class, 's
 Route::get('/katalog/{id}/show', [App\Http\Controllers\KatalogController::class, 'show'])->name('katalog.show');
 // Route::post('katalog/{parents_id}/store-child', [App\Http\Controllers\KatalogController::class, 'storeChild'])->name('katalog.storeChild');
 Route::post('katalog/store-child', [App\Http\Controllers\KatalogController::class, 'storeChild'])->name('katalog.storeChild');
-
+// Route::put('katalog/update-photo', [App\Http\Controllers\KatalogController::class, 'updatePhoto'])->name('katalog.updatePhoto');
+Route::put('katalog/update-photo/{id}', [App\Http\Controllers\KatalogController::class, 'updatePhoto'])->name('katalog.updatePhoto');
+Route::put('katalog/update-folder/{id}', [App\Http\Controllers\KatalogController::class, 'updateChild'])->name('katalog.updateChild');
+Route::put('katalog/update-folder-child/{id}', [App\Http\Controllers\KatalogController::class, 'updateGrandChild'])->name('katalog.updateGrandChild');
+Route::post('katalog/store-photo', [App\Http\Controllers\KatalogController::class, 'storePhoto'])->name('katalog.storePhoto');
 Route::get('/katalog/{parentId}/{childId}/detail', [App\Http\Controllers\KatalogController::class, 'detail'])->name('katalog.detail');
-
 Route::get('/katalog/{childId}', [App\Http\Controllers\KatalogController::class, 'childDetail'])->name('katalog.childDetail');
-// routes/web.php
 Route::post('/update-parent', [App\Http\Controllers\KatalogController::class, 'update'])->name('update.parent');
-
-Route::post('katalog/{childs_id}/store-grand-child', [App\Http\Controllers\KatalogController::class, 'storeGrandChild'])->name('katalog.storeGrandChild');
+Route::delete('/katalog/destroy/{id}', [App\Http\Controllers\KatalogController::class, 'destroy'])->name('katalog.destroy');
+Route::delete('/katalog/destroy-child/{id}', [App\Http\Controllers\KatalogController::class, 'destroyChild'])->name('katalog.destroyChild');
+Route::delete('/katalog/destroy-grand-child/{id}', [App\Http\Controllers\KatalogController::class, 'destroyGrandChild'])->name('katalog.destroyGrandChild');
+Route::delete('/katalog/destroy-photo/{id}', [App\Http\Controllers\KatalogController::class, 'destroyPhoto'])->name('katalog.destroyPhoto');
+Route::post('katalog/store-grand-child', [App\Http\Controllers\KatalogController::class, 'storeGrandChild'])->name('katalog.storeGrandChild');
 
 Route::post('katalog/temp-photo', [App\Http\Controllers\KatalogController::class, 'uploadTempPhoto'])->name('projects.uploadTempPhoto');
 

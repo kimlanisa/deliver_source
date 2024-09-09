@@ -86,6 +86,86 @@ class KatalogController extends Controller
         }
     }
 
+    public function updateChild(Request $request)
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:1000',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $dataPost = $request->only(['name', 'description']);
+
+            if ($request->filled('parents_id')) {
+                $dataPost['parents_id'] = $request->parents_id;
+            } elseif ($request->filled('childs_id')) {
+                $dataPost['childs_id'] = $request->childs_id;
+            } elseif ($request->filled('grand_childs_id')) {
+                $dataPost['grand_childs_id'] = $request->grand_childs_id;
+            }
+
+            if ($request->hasFile('thumbnail')) {
+                $file = $request->file('thumbnail');
+                $filename = 'thumbnail_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
+                $destinationPath = 'uploads/file/thumbnail';
+                $file->move($destinationPath, $filename);
+                $dataPost['thumbnail'] = $destinationPath . '/' . $filename;
+            }
+
+            $child = ChildsCategoriesKatalog::findOrFail($request->id);
+            $child->update($dataPost);
+
+            return redirect()->to(url()->previous())->with('success', 'Berhasil disimpan!');
+        } catch (\Exception $e) {
+            \Log::error("Error occurred while storing the data: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
+        }
+    }
+
+    public function storePhoto(Request $request)
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:1000',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $exists = PhotoKatalog::where('name', $request->name)->exists();
+            if ($exists) {
+                return redirect()->back()->with('error', 'Kategori sudah ada!');
+            }
+
+            $dataPost = $request->only(['name', 'description']);
+
+            if ($request->filled('parents_id')) {
+                $dataPost['parents_id'] = $request->parents_id;
+            } elseif ($request->filled('childs_id')) {
+                $dataPost['childs_id'] = $request->childs_id;
+            } elseif ($request->filled('grand_childs_id')) {
+                $dataPost['grand_childs_id'] = $request->grand_childs_id;
+            }
+
+            if ($request->hasFile('thumbnail')) {
+                $file = $request->file('thumbnail');
+                $filename = 'thumbnail_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
+                $destinationPath = 'uploads/file/thumbnail';
+                $file->move($destinationPath, $filename);
+                $dataPost['thumbnail'] = $destinationPath . '/' . $filename;
+            }
+
+            \Log::info("Data yang akan disimpan: ", $dataPost);
+            $result = PhotoKatalog::create($dataPost);
+            \Log::info("Data berhasil disimpan: ", $result->toArray());
+
+            return redirect()->to(url()->previous())->with('success', 'Berhasil disimpan!');
+        } catch (\Exception $e) {
+            \Log::error("Error occurred while storing the data: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
+        }
+    }
+
     public function storeGrandChild(Request $request)
     {
         try {
@@ -120,21 +200,65 @@ class KatalogController extends Controller
         }
     }
 
+    public function updateGrandChild (Request $request)
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:1000',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $dataPost = $request->only(['name', 'description']);
+
+            if ($request->filled('parents_id')) {
+                $dataPost['parents_id'] = $request->parents_id;
+            } elseif ($request->filled('childs_id')) {
+                $dataPost['childs_id'] = $request->childs_id;
+            } elseif ($request->filled('grand_childs_id')) {
+                $dataPost['grand_childs_id'] = $request->grand_childs_id;
+            }
+
+            if ($request->hasFile('thumbnail')) {
+                $file = $request->file('thumbnail');
+                $filename = 'thumbnail_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
+                $destinationPath = 'uploads/file/thumbnail';
+                $file->move($destinationPath, $filename);
+                $dataPost['thumbnail'] = $destinationPath . '/' . $filename;
+            }
+
+            $grandChild = GrandChildsCategoriesKatalog::findOrFail($request->id);
+            $grandChild->update($dataPost);
+
+            return redirect()->to(url()->previous())->with('success', 'Berhasil disimpan!');
+        } catch (\Exception $e) {
+            \Log::error("Error occurred while storing the data: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
+        }
+    }	
+
     public function show($id)
     {
         $parents = ParentsCategoriesKatalog::where('id', $id)->with('childs')->firstOrFail();
 
-        return view('katalog.show', compact('parents'));
+        $photos = PhotoKatalog::where('parents_id', $id)->get();
+
+        return view('katalog.show', compact('parents', 'photos'));
     }
 
     public function detail($parentId, $childId)
     {
+        $parents = ParentsCategoriesKatalog::where('id', $parentId)
+            ->with('childs')
+            ->firstOrFail();
 
         $childs = ChildsCategoriesKatalog::where('id', $childId)
             ->with('grand_childs')
             ->firstOrFail();
 
-        return view('katalog.detail', compact('childs'));
+        $photos = PhotoKatalog::where('childs_id', $childId)->get();
+        
+        return view('katalog.detail', compact('childs', 'parents', 'photos'));
     }
 
     public function getParentDetail($parentId)
@@ -157,27 +281,80 @@ class KatalogController extends Controller
         return view('katalog.detail', compact('child'));
     }
 
-    public function update(Request $request)
+    public function updatePhoto(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'thumbnail' => 'nullable|image',
-            'photo.*' => 'nullable|image',
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:1000',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
 
-        $parent = ParentsCategoriesKatalog::findOrFail($request->id);
-        $parent->name = $request->name;
-        $parent->description = $request->description;
+            $dataPost = $request->only(['name', 'description']);
 
-        if ($request->hasFile('thumbnail')) {
-            $thumbnailPath = $request->file('thumbnail')->store('thumbnails');
-            $parent->thumbnail = $thumbnailPath;
+            if ($request->filled('parents_id')) {
+                $dataPost['parents_id'] = $request->parents_id;
+            } elseif ($request->filled('childs_id')) {
+                $dataPost['childs_id'] = $request->childs_id;
+            } elseif ($request->filled('grand_childs_id')) {
+                $dataPost['grand_childs_id'] = $request->grand_childs_id;
+            }
+
+            if ($request->hasFile('thumbnail')) {
+                $file = $request->file('thumbnail');
+                $filename = 'thumbnail_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
+                $destinationPath = 'uploads/file/thumbnail';
+                $file->move($destinationPath, $filename);
+                $dataPost['thumbnail'] = $destinationPath . '/' . $filename;
+            }
+
+            $photo = PhotoKatalog::findOrFail($request->id);
+            $photo->update($dataPost);
+
+            return redirect()->to(url()->previous())->with('success', 'Berhasil disimpan!');
+        } catch (\Exception $e) {
+            \Log::error("Error occurred while storing the data: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
         }
+    }
 
-        $parent->save();
+    Public function destroyPhoto($id)
+    {
+        try {
+            $photo = PhotoKatalog::findOrFail($id);
+            $photo->delete();
 
-        return redirect()->back()->with('success', 'Data updated successfully');
+            return redirect()->to(url()->previous())->with('success', 'Berhasil dihapus!');
+        } catch (\Exception $e) {
+            \Log::error("Error occurred while deleting the data: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus data.');
+        }
+    }
+
+    public function destroyChild($childId)
+    {
+        try {
+            $child = ChildsCategoriesKatalog::findOrFail($childId);
+            $child->delete();
+
+            return redirect()->to(url()->previous())->with('success', 'Berhasil dihapus!');
+        } catch (\Exception $e) {
+            \Log::error("Error occurred while deleting the data: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus data.');
+        }
+    }
+
+    public function destroyGrandChild($grandChildId)
+    {
+        try {
+            $grandChild = GrandChildsCategoriesKatalog::findOrFail($grandChildId);
+            $grandChild->delete();
+
+            return redirect()->to(url()->previous())->with('success', 'Berhasil dihapus!');
+        } catch (\Exception $e) {
+            \Log::error("Error occurred while deleting the data: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus data.');
+        }
     }
 
 }

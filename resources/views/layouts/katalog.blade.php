@@ -71,36 +71,45 @@
 
                     @php
                         $folders = \App\Models\ParentsCategoriesKatalog::all();
+
+                        $childCategories = \App\Models\ChildsCategoriesKatalog::whereIn(
+                            'parents_id',
+                            $folders->pluck('id'),
+                        )
+                            ->get()
+                            ->groupBy('parents_id');
                     @endphp
 
                     @foreach ($folders as $folder)
                         @php
-                            $isActiveParent = request()->is('katalog/' . $folder->id . '/*');
+                            $isActiveParent =
+                                request()->is('katalog/' . $folder->id . '/*') ||
+                                request()->is('katalog/' . $folder->id);
                         @endphp
 
                         <li class="menu-item {{ $isActiveParent ? 'active open' : '' }}">
-                            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <a href="{{ route('katalog.show', $folder->id) }}" class="menu-link">
                                 <i class="menu-icon tf-icons bx bx-collection"></i>
                                 <div class="text-truncate" data-i18n="Layouts">{{ $folder->name }}</div>
+                                <i class="tf-icons bx bx-chevron-right arrow-icon"></i> 
                             </a>
 
-                            @php
-                                $files = \App\Models\ChildsCategoriesKatalog::where('parents_id', $folder->id)->get();
-                            @endphp
-
-                            <ul class="menu-sub">
-                                @foreach ($files as $file)
-                                    <li class="menu-item {{ request()->is('katalog/' . $file->id) ? 'active' : '' }}">
-                                        <a href="{{ route('katalog.show', $file->id) }}" class="menu-link">
-                                            <div class="text-truncate" data-i18n="Vertical">{{ $file->name }}</div>
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
+                            @if ($childCategories->has($folder->id))
+                                <ul class="menu-sub">
+                                    @foreach ($childCategories[$folder->id] as $file)
+                                        <li
+                                            class="menu-item {{ request()->is('katalog/' . $file->id) ? 'active' : '' }}">
+                                            <a href="{{ route('katalog.show', $file->id) }}" class="menu-link">
+                                                <div class="text-truncate" data-i18n="Vertical">{{ $file->name }}
+                                                </div>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
                         </li>
                     @endforeach
                 </ul>
-
             </aside>
 
             <div class="layout-page">
