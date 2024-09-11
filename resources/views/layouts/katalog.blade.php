@@ -91,7 +91,7 @@
                             <a href="{{ route('katalog.show', $folder->id) }}" class="menu-link">
                                 <i class="menu-icon tf-icons bx bx-collection"></i>
                                 <div class="text-truncate" data-i18n="Layouts">{{ $folder->name }}</div>
-                                <i class="tf-icons bx bx-chevron-right arrow-icon"></i> 
+                                <i class="tf-icons bx bx-chevron-right arrow-icon"></i>
                             </a>
 
                             @if ($childCategories->has($folder->id))
@@ -127,28 +127,99 @@
                         <div class="navbar-nav align-items-center">
                             <div class="nav-item d-flex align-items-center">
                                 <i class="bx bx-search bx-md"></i>
-                                <input type="text" class="form-control border-0 shadow-none ps-1 ps-sm-2"
+                                <input type="text" id="global-search" class="form-control border-0 shadow-none ps-1 ps-sm-2"
                                     placeholder="Search..." aria-label="Search..." />
                             </div>
                         </div>
+
+                        <script>
+                            document.getElementById('global-search').addEventListener('input', function() {
+                                const searchTerm = this.value.toLowerCase().trim();
+                                const cards = Array.from(document.querySelectorAll('#main-container .grid-item'));
+
+                                if (searchTerm === '') {
+                                    cards.forEach(card => {
+                                        card.style.display = '';
+                                        removeHighlight(card);
+                                    });
+                                    resetGridLayout();
+                                    return;
+                                }
+
+                                function highlightText(text, term) {
+                                    const regex = new RegExp(`(${term})`, 'gi');
+                                    return text.replace(regex, `<mark>$1</mark>`);
+                                }
+
+                                function removeHighlight(card) {
+                                    const titleElement = card.querySelector('.card-title');
+                                    const bodyElement = card.querySelector('.card-body .card-text');
+
+                                    if (titleElement) {
+                                        titleElement.innerHTML = titleElement.textContent;
+                                    }
+                                    if (bodyElement) {
+                                        bodyElement.innerHTML = bodyElement.textContent;
+                                    }
+                                }
+
+                                function resetGridLayout() {
+                                    cards.forEach(card => {
+                                        card.style.display = '';
+                                    });
+                                    const gridContainer = document.querySelector('.grid');
+                                    if (gridContainer) {
+                                        gridContainer.style.position = 'relative';
+                                        const masonry = new Masonry(gridContainer, {
+                                            itemSelector: '.grid-item',
+                                            columnWidth: '.grid-sizer',
+                                            percentPosition: true
+                                        });
+                                        masonry.layout();
+                                    }
+                                }
+
+                                function arrangeCards() {
+                                    const gridContainer = document.querySelector('.grid');
+                                    if (gridContainer) {
+                                        const masonry = new Masonry(gridContainer, {
+                                            itemSelector: '.grid-item',
+                                            columnWidth: '.grid-sizer',
+                                            percentPosition: true
+                                        });
+                                        masonry.layout();
+                                    }
+                                }
+
+                                cards.forEach((card) => {
+                                    const titleElement = card.querySelector('.card-title');
+                                    const bodyElement = card.querySelector('.card-body .card-text');
+
+                                    const titleText = titleElement.textContent.toLowerCase();
+                                    const bodyText = bodyElement.textContent.toLowerCase();
+
+                                    if (titleText.includes(searchTerm) || bodyText.includes(searchTerm)) {
+                                        card.style.display = '';
+
+                                        if (titleElement) {
+                                            titleElement.innerHTML = highlightText(titleElement.textContent, searchTerm);
+                                        }
+                                        if (bodyElement) {
+                                            bodyElement.innerHTML = highlightText(bodyElement.textContent, searchTerm);
+                                        }
+                                    } else {
+                                        card.style.display = 'none';
+                                    }
+                                });
+
+                                arrangeCards();
+                            });
+                        </script>
                         <!-- /Search -->
 
                         <ul class="navbar-nav flex-row align-items-center ms-auto">
                             <!-- Place this tag where you want the button to render. -->
 
-
-                            {{-- <div class="btn-group dropstart">
-                                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                    Create New
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
-                                            data-bs-target="#modal-create-folder">New Folder</a></li>
-                                    <li><a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
-                                            data-bs-target="#modal-create-file">Upload File</a></li>
-                                </ul>
-                            </div> --}}
 
                             <!-- User -->
                             {{-- <li class="nav-item navbar-dropdown dropdown-user dropdown">
@@ -215,23 +286,9 @@
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
 
-
                     <!-- Content -->
 
                     <div class="container-xxl flex-grow-1 container-p-y">
-                        {{-- <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item">
-                                    <a href="javascript:void(0);">Home</a>
-                                </li>
-                                <li class="breadcrumb-item">
-                                    <a href="javascript:void(0);">Library</a>
-                                </li>
-                                <li class="breadcrumb-item active">Data</li>
-                            </ol>
-                        </nav> --}}
-
-
                         <main id="main-container">
                             @yield('content')
                         </main>
