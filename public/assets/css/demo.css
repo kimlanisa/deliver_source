@@ -191,32 +191,32 @@
 
 .grid {
     margin: 0 auto;
-    gap: 16px; 
+    gap: 16px;
 }
 
 .grid-sizer, .grid-item {
-    width: 20%; 
+    width: 20%;
 }
 
 .grid-item {
     margin-bottom: 16px;
-    transition: none; 
-    border: none; 
-    background: none; 
-    box-shadow: none; 
+    transition: none;
+    border: none;
+    background: none;
+    box-shadow: none;
 }
 
 .grid-item img {
     width: 100%;
     height: auto;
-    max-height: 150px; 
-    object-fit: contain; 
+    max-height: 150px;
+    object-fit: contain;
     cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease; 
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .grid-item img:hover {
-    transform: scale(1.05); 
+    transform: scale(1.05);
 }
 
 .grid-item .card img {
@@ -224,7 +224,7 @@
 }
 
 .grid-item .card:hover img {
-    transform: scale(1.1); 
+    transform: scale(1.1);
 }
 
 .grid-item .card .img-container {
@@ -236,7 +236,7 @@
 
 .arrow-icon {
     margin-left: auto;
-    font-size: 16px; 
+    font-size: 16px;
 }
 
 #smallImageModal {
@@ -263,20 +263,7 @@
     width: 100%;
     height: auto;
     object-fit: contain; /* Gambar tidak akan terpotong, tetap proporsional */
-    max-height: 250px; /* Batas tinggi agar gambar tidak terlalu besar */
-}
-
-#smallModalTitle {
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-#smallModalDescription {
-    font-size: 0.9rem;
-    text-align: justify;
-    margin-top: 12px;
-    color: #6c757d;
+    max-height: 250px;
 }
 
 

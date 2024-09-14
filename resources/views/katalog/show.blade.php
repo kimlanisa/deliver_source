@@ -252,17 +252,17 @@
                                                         <img id="thumbnail-preview-{{ $photo->id }}" src="{{ asset($photo->thumbnail) }}" alt="Preview" style="margin-top:10px; max-width:100px;" />
                                                     @endif
                                                 </div>
-                    
+
                                                 <div class="mb-3">
                                                     <label for="name-{{ $photo->id }}" class="form-label">Judul</label>
                                                     <input type="text" class="form-control" id="name-{{ $photo->id }}" name="name" value="{{ $photo->name }}" required>
                                                 </div>
-                    
+
                                                 <div class="mb-3">
                                                     <label for="description-{{ $photo->id }}" class="form-label">Description</label>
                                                     <textarea class="form-control" id="description-{{ $photo->id }}" name="description" rows="3" required>{{ $photo->description }}</textarea>
                                                 </div>
-                    
+
                                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                                     <button type="submit" class="btn btn-primary">Update</button>
                                                 </div>
@@ -272,7 +272,7 @@
                                 </div>
                             </div>
                         </div>
-                    
+
                         <h5 class="card-title" style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; text-align: left;">
                             @php
                                 if (strlen($photo->name) > 21) {
@@ -283,7 +283,7 @@
                             @endphp
                         </h5>
                     </div>
-                    
+
 
                     <div style="width: 100%; height: 150px; overflow: hidden; border-radius: 6px;">
                         <img src="{{ asset($photo->thumbnail) }}" alt="{{ $photo->name }}"
@@ -295,7 +295,7 @@
                     <div class="card-body" style="padding: 8px;">
                         <p class="card-text"
                             style="color: #6c757d; font-size: 0.8rem; text-align: left; margin-top: 6px;">
-                            @php 
+                            @php
                                 if (strlen($photo->description) > 21) {
                                     echo substr($photo->description, 0, 21) . '...';
                                 } else {
@@ -309,7 +309,7 @@
         </div>
     @endif
 
-    <div id="smallImageModal">
+    {{-- <div id="smallImageModal">
         <img id="smallModalImage" style="width: 100%; height: auto; object-fit: contain; border-radius: 8px;">
         <div class="card-body" style="padding: 10px;">
             <h5 id="smallModalTitle" style="padding: 5px 0; text-align: justify;"></h5>
@@ -317,7 +317,7 @@
             </p>
         </div>
     </div>
-    
+
     <script>
         function showSmallModal(image, title, description, element) {
             document.getElementById('smallModalImage').src = image;
@@ -329,11 +329,80 @@
 
             modal.style.top = (rect.bottom + window.scrollY) + 'px';
             modal.style.left = rect.left + 'px';
-            modal.style.display = 'block'; 
+            modal.style.display = 'block';
         }
 
         function hideSmallModal() {
-            document.getElementById('smallImageModal').style.display = 'none'; 
+            document.getElementById('smallImageModal').style.display = 'none';
         }
-    </script>
+    </script> --}}
+    <div id="smallImageModal" onmouseenter="keepSmallModalVisible()" onmouseleave="hideSmallModal()"
+            style="position: absolute; display: none;">
+            <img id="smallModalImage" style="width: 100%; height: auto; object-fit: contain; border-radius: 8px; margin-bottom: 8px;">
+            <div class="card-body">
+                <h5 id="smallModalTitle" style="text-align: justify;"></h5>
+                <p id="smallModalDescription" class="card-text"
+                    style="text-align: justify; color: #6c757d;">
+                </p>
+            </div>
+        </div>
+
+        <script>
+            function showSmallModal(image, title, description, element) {
+                document.getElementById('smallModalImage').src = image;
+                document.getElementById('smallModalTitle').innerText = title;
+                document.getElementById('smallModalDescription').innerText = description;
+
+                const rect = element.getBoundingClientRect();
+                const modal = document.getElementById('smallImageModal');
+
+                modal.style.top = (rect.bottom + window.scrollY) + 'px';
+                modal.style.left = rect.left + 'px';
+                modal.style.display = 'block';
+            }
+
+            function hideSmallModal() {
+                document.getElementById('smallImageModal').style.display = 'none';
+            }
+
+            let modalVisible = false;
+
+            function showSmallModal(image, title, description, element) {
+                const modal = document.getElementById('smallImageModal');
+
+                document.getElementById('smallModalImage').src = image;
+                document.getElementById('smallModalTitle').innerText = title;
+                document.getElementById('smallModalDescription').innerText = description;
+
+                const rect = element.getBoundingClientRect();
+                modal.style.top = (rect.bottom + window.scrollY) + 'px';
+                modal.style.left = rect.left + 'px';
+
+                modal.style.display = 'block';
+                modalVisible = true;
+            }
+
+            function keepSmallModalVisible() {
+                modalVisible = true;
+            }
+
+            function hideSmallModal() {
+                if (!modalVisible) {
+                    document.getElementById('smallImageModal').style.display = 'none';
+                }
+            }
+
+            document.querySelectorAll('.grid-item img').forEach((img) => {
+                img.addEventListener('mouseenter', function() {
+                    modalVisible = true;
+                });
+
+                img.addEventListener('mouseleave', function() {
+                    modalVisible = false; 
+                    setTimeout(() => {
+                        hideSmallModal();
+                    }, 200); 
+                });
+            });
+        </script>
 @endsection
