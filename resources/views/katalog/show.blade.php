@@ -46,8 +46,16 @@
                             <input type="text" class="form-control" id="name" name="name" required>
                         </div>
                         <div class="mb-3">
+                            <label for="variasi" class="form-label">Variasi</label>
+                            <input type="text" class="form-control" id="variasi" name="variasi" required>
+                        </div>
+                        <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
                             <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="link_url" class="form-label">Link Url</label>
+                            <input type="text" class="form-control" id="link_url" name="link_url" required>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <button type="submit" class="btn btn-primary">Create</button>
@@ -89,16 +97,17 @@
             </div>
         </div>
     </div>
+    
 
+    @include('layouts._message')
+    <h4 class="mb-4">{{ $parents->name }}</h4>
     @if ($parents->childs->isNotEmpty())
-        <h4 class="mb-4">{{ $parents->name }}</h4>
         <div class="grid"
             data-masonry='{ "itemSelector": ".grid-item", "columnWidth": ".grid-sizer", "percentPosition": true }'>
             <div class="grid-sizer"></div>
             @foreach ($parents->childs as $item)
                 <div class="grid-item card"
                     style="background-color: white; border-radius: 8px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); max-width: 180px; padding: 8px; position: relative;">
-
                     <div class="d-flex justify-content-between">
                         <div class="dropdown" style="position: absolute; top: 8px; right: 8px;">
                             <a href="javascript:void(0);" id="dropdownMenuLink{{ $item->id }}"
@@ -257,12 +266,18 @@
                                                     <label for="name-{{ $photo->id }}" class="form-label">Judul</label>
                                                     <input type="text" class="form-control" id="name-{{ $photo->id }}" name="name" value="{{ $photo->name }}" required>
                                                 </div>
-
+                                                <div class="mb-3">
+                                                    <label for="variasi-{{ $photo->id }}" class="form-label">Variasi</label>
+                                                    <input type="text" class="form-control" id="variasi-{{ $photo->id }}" name="variasi" value="{{ $photo->variasi }}" required>
+                                                </div>
                                                 <div class="mb-3">
                                                     <label for="description-{{ $photo->id }}" class="form-label">Description</label>
                                                     <textarea class="form-control" id="description-{{ $photo->id }}" name="description" rows="3" required>{{ $photo->description }}</textarea>
                                                 </div>
-
+                                                <div class="mb-3">
+                                                    <label for="link_url-{{ $photo->id }}" class="form-label">Link Url</label>
+                                                    <input type="text" class="form-control" id="link_url-{{ $photo->id }}" name="link_url" value="{{ $photo->link_url }}" required>
+                                                </div>
                                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                                     <button type="submit" class="btn btn-primary">Update</button>
                                                 </div>
@@ -289,7 +304,8 @@
                         <img src="{{ asset($photo->thumbnail) }}" alt="{{ $photo->name }}"
                             style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
                             onmouseenter="showSmallModal('{{ asset($photo->thumbnail) }}', '{{ $photo->name }}', '{{ $photo->description }}', this)"
-                            onmouseleave="hideSmallModal()">
+                            onmouseleave="hideSmallModal()"
+                            onclick="window.location.href='{{ route('katalog.photoDetail', ['photoId' => $photo->id]) }}';">
                     </div>
 
                     <div class="card-body" style="padding: 8px;">
@@ -398,10 +414,10 @@
                 });
 
                 img.addEventListener('mouseleave', function() {
-                    modalVisible = false; 
+                    modalVisible = false;
                     setTimeout(() => {
                         hideSmallModal();
-                    }, 200); 
+                    }, 200);
                 });
             });
         </script>

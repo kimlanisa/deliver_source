@@ -127,8 +127,9 @@
                         <div class="navbar-nav align-items-center">
                             <div class="nav-item d-flex align-items-center">
                                 <i class="bx bx-search bx-md"></i>
-                                <input type="text" id="global-search" class="form-control border-0 shadow-none ps-1 ps-sm-2"
-                                    placeholder="Search..." aria-label="Search..." />
+                                <input type="text" id="global-search"
+                                    class="form-control border-0 shadow-none ps-1 ps-sm-2" placeholder="Search..."
+                                    aria-label="Search..." />
                             </div>
                         </div>
 
@@ -322,6 +323,8 @@
         <!-- Overlay -->
         <div class="layout-overlay layout-menu-toggle"></div>
     </div>
+   
+
     <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>

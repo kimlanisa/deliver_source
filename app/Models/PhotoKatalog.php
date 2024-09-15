@@ -10,7 +10,7 @@ class PhotoKatalog extends Model
     use HasFactory;
 
     protected $table = 'photo_katalog';
-    protected $fillable = ['name', 'description', 'thumbnail', 'parents_id', 'childs_id', 'grand_childs_id'];
+    protected $fillable = ['name', 'description', 'thumbnail', 'parents_id', 'childs_id', 'grand_childs_id', 'variasi', 'link_url'];
 
     public function parents()
     {

@@ -34,7 +34,7 @@
                 <div class="modal-body">
                     <form action="{{ route('katalog.storePhoto') }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        {{-- <input type="hidden" name="parents_id" id="hidden-parents-id" value="{{ $parents->id }}"> --}}
+                        <input type="hidden" name="parents_id" id="hidden-parents-id" value="{{ $parents->id }}">
                         <input type="hidden" name="childs_id" id="hidden-childs-id" value="{{ $childs->id }}">
                         <div class="mb-3">
                             <label for="thumbnail" class="form-label">Thumbnail</label>
@@ -47,8 +47,17 @@
                             <input type="text" class="form-control" id="name" name="name" required>
                         </div>
                         <div class="mb-3">
+                            <label for="variasi" class="form-label">Variasi</label>
+                            <input type="text" class="form-control" id="variasi" name="variasi" required>
+                        </div>
+                        <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            <textarea class="form-control" id="description" name="description" rows="3" maxlength="255" required></textarea>
+                            <div id="charCount" class="form-text text-end">0/255 Characters</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="link_url" class="form-label">Link Url</label>
+                            <input type="text" class="form-control" id="link_url" name="link_url" required>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <button type="submit" class="btn btn-primary">Create</button>
@@ -91,8 +100,9 @@
         </div>
     </div>
 
+    @include('layouts._message')
+    <h4 class="mb-4">{{ $childs->name }}</h4>
     @if ($childs->grand_childs->isNotEmpty())
-        <h4 class="mb-4">{{ $childs->name }}</h4>
         <div class="grid"
             data-masonry='{ "itemSelector": ".grid-item", "columnWidth": ".grid-sizer", "percentPosition": true }'>
             <div class="grid-sizer"></div>
@@ -274,9 +284,25 @@
                                                 </div>
 
                                                 <div class="mb-3">
+                                                    <label for="variasi-{{ $photo->id }}"
+                                                        class="form-label">Variasi</label>
+                                                    <input type="text" class="form-control"
+                                                        id="variasi-{{ $photo->id }}" name="variasi"
+                                                        value="{{ $photo->variasi }}" required>
+                                                </div>
+
+                                                <div class="mb-3">
                                                     <label for="description-{{ $photo->id }}"
                                                         class="form-label">Description</label>
                                                     <textarea class="form-control" id="description-{{ $photo->id }}" name="description" rows="3" required>{{ $photo->description }}</textarea>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label for="link_url-{{ $photo->id }}"
+                                                        class="form-label">Link Url</label>
+                                                    <input type="text" class="form-control"
+                                                        id="link_url-{{ $photo->id }}" name="link_url"
+                                                        value="{{ $photo->link_url }}" required>
                                                 </div>
 
                                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -301,12 +327,12 @@
                         </h5>
                     </div>
 
-
                     <div style="width: 100%; height: 150px; overflow: hidden; border-radius: 6px;">
                         <img src="{{ asset($photo->thumbnail) }}" alt="{{ $photo->name }}"
                             style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
                             onmouseenter="showSmallModal('{{ asset($photo->thumbnail) }}', '{{ $photo->name }}', '{{ $photo->description }}', this)"
-                            onmouseleave="hideSmallModal()">
+                            onmouseleave="hideSmallModal()"
+                            onclick="window.location.href='{{ route('katalog.photoDetail', ['photoId' => $photo->id]) }}';">
                     </div>
 
                     <div class="card-body" style="padding: 8px;">
@@ -393,4 +419,22 @@
             });
         });
     </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const descriptionInput = document.getElementById('description');
+        const charCount = document.getElementById('charCount');
+
+        descriptionInput.addEventListener('input', function() {
+            const currentLength = descriptionInput.value.length;
+            charCount.textContent = `${currentLength}/255 Characters`;
+
+            if (currentLength >= 255) {
+                charCount.style.color = 'red';
+            } else {
+                charCount.style.color = 'black';
+            }
+        });
+    });
+</script>
 @endsection

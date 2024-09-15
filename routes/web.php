@@ -94,7 +94,7 @@ Route::delete('/katalog/destroy-child/{id}', [App\Http\Controllers\KatalogContro
 Route::delete('/katalog/destroy-grand-child/{id}', [App\Http\Controllers\KatalogController::class, 'destroyGrandChild'])->name('katalog.destroyGrandChild');
 Route::delete('/katalog/destroy-photo/{id}', [App\Http\Controllers\KatalogController::class, 'destroyPhoto'])->name('katalog.destroyPhoto');
 Route::post('katalog/store-grand-child', [App\Http\Controllers\KatalogController::class, 'storeGrandChild'])->name('katalog.storeGrandChild');
-
+Route::get('katalog/photo-detail/{photoId}', [App\Http\Controllers\KatalogController::class, 'photoDetail'])->name('katalog.photoDetail');
 Route::post('katalog/temp-photo', [App\Http\Controllers\KatalogController::class, 'uploadTempPhoto'])->name('projects.uploadTempPhoto');
 
 Route::post('katalog/media', [App\Http\Controllers\KatalogController::class,'storeMedia'])->name('projects.storeMedia');
