@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddLinkToPhotoKatalogTable extends Migration
+class CreateFilePhotoTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,12 @@ class AddLinkToPhotoKatalogTable extends Migration
      */
     public function up()
     {
-        Schema::table('photo_katalog', function (Blueprint $table) {
-            $table->string('link_url')->after('description')->nullable();
+        Schema::create('file_photo', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('photo_id');
+            $table->string('file_name');
+            $table->string('file_path');
+            $table->timestamps();
         });
     }
 
@@ -25,8 +29,6 @@ class AddLinkToPhotoKatalogTable extends Migration
      */
     public function down()
     {
-        Schema::table('photo_katalog', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('file_photo');
     }
 }

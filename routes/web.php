@@ -85,7 +85,12 @@ Route::put('katalog/update-photo/{id}', [App\Http\Controllers\KatalogController:
 Route::put('katalog/update-photo/{id}', [App\Http\Controllers\KatalogController::class, 'updatePhoto'])->name('katalog.updatePhoto');
 Route::put('katalog/update-folder/{id}', [App\Http\Controllers\KatalogController::class, 'updateChild'])->name('katalog.updateChild');
 Route::put('katalog/update-folder-child/{id}', [App\Http\Controllers\KatalogController::class, 'updateGrandChild'])->name('katalog.updateGrandChild');
+
+// dipakai
 Route::post('katalog/store-photo', [App\Http\Controllers\KatalogController::class, 'storePhoto'])->name('katalog.storePhoto');
+Route::post('katalog/store-detail-photo', [App\Http\Controllers\KatalogController::class, 'storeDetailPhoto'])->name('katalog.storeDetailPhoto');
+Route::put('katalog/update-detail-photo', [App\Http\Controllers\KatalogController::class, 'updateDetailPhoto'])->name('katalog.updateDetailPhoto');
+
 Route::get('/katalog/{parentId}/{childId}/detail', [App\Http\Controllers\KatalogController::class, 'detail'])->name('katalog.detail');
 Route::get('/katalog/{childId}', [App\Http\Controllers\KatalogController::class, 'childDetail'])->name('katalog.childDetail');
 Route::post('/update-parent', [App\Http\Controllers\KatalogController::class, 'update'])->name('update.parent');
@@ -98,7 +103,7 @@ Route::get('katalog/photo-detail/{photoId}', [App\Http\Controllers\KatalogContro
 Route::post('katalog/temp-photo', [App\Http\Controllers\KatalogController::class, 'uploadTempPhoto'])->name('projects.uploadTempPhoto');
 
 Route::post('katalog/media', [App\Http\Controllers\KatalogController::class,'storeMedia'])->name('projects.storeMedia');
-Route::post('katalog/media/delete', 'EventGalleryController@deleteMedia3')->name('projects.deleteMedia');
+Route::post('katalog/media/delete', [App\Http\Controllers\KatalogController::class,'deleteMedia'])->name('projects.deleteMedia');
 
 Route::post('katalog/create-menu', [App\Http\Controllers\KatalogController::class, 'createMenu'])->name('katalog.createMenu');
 Route::post('katalog/create-folder', [App\Http\Controllers\KatalogController::class, 'createFolder'])->name('katalog.createFolder');

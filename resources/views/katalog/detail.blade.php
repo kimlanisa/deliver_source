@@ -25,39 +25,47 @@
     </div>
 
     <div class="modal fade" id="modal-upload-photo" tabindex="-1" aria-labelledby="modal-add-label" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document" data-bs-dismiss="false"
+            data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modal-add-label">Upload Foto</h5>
+                    <h5 class="modal-title" id="modal-add-label">Upload Photo</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('katalog.storePhoto') }}" method="POST" enctype="multipart/form-data">
+                    <form class="dropzone" id="photoDropzone" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="dz-message" data-dz-message><span>Drag & drop or click to upload your photos</span>
+                        </div>
+                        <div class="fallback">
+                            <input name="file_name[]" type="file" multiple />
+                        </div>
+                    </form>
+
+                    <form id="photoDetailsForm" method="POST" action="{{ route('katalog.storeDetailPhoto') }}">
                         @csrf
                         <input type="hidden" name="parents_id" id="hidden-parents-id" value="{{ $parents->id }}">
                         <input type="hidden" name="childs_id" id="hidden-childs-id" value="{{ $childs->id }}">
-                        <div class="mb-3">
-                            <label for="thumbnail" class="form-label">Thumbnail</label>
-                            <input type="file" class="form-control" id="thumbnail" name="thumbnail" required>
-                            <img id="thumbnail-preview" src="#" alt="Preview"
-                                style="display:none; margin-top:10px; max-width:100px;" />
-                        </div>
-                        <div class="mb-3">
+                        <div class="mb-3 mt-4">
                             <label for="name" class="form-label">Judul</label>
                             <input type="text" class="form-control" id="name" name="name" required>
                         </div>
                         <div class="mb-3">
                             <label for="variasi" class="form-label">Variasi</label>
-                            <input type="text" class="form-control" id="variasi" name="variasi" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" maxlength="255" required></textarea>
-                            <div id="charCount" class="form-text text-end">0/255 Characters</div>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="variasi" name="variasi[]" required>
+                                <button type="button" class="btn btn-outline-light" id="add-variasi">+</button>
+                            </div>
+                            <div id="variasi-list" class="mt-2"></div>
                         </div>
                         <div class="mb-3">
                             <label for="link_url" class="form-label">Link Url</label>
                             <input type="text" class="form-control" id="link_url" name="link_url" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" maxlength="255" required></textarea>
+                            <div id="charCount" class="form-text text-end">0/255 characters</div>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <button type="submit" class="btn btn-primary">Create</button>
@@ -218,143 +226,70 @@
         </div>
     @endif
 
-    @if ($photos->isNotEmpty())
+    @if ($dataPhotos->isNotEmpty())
         <p class="mb-4">Photo Terkait</p>
         <div class="grid"
             data-masonry='{ "itemSelector": ".grid-item", "columnWidth": ".grid-sizer", "percentPosition": true }'>
             <div class="grid-sizer"></div>
-            @foreach ($photos as $photo)
-                <div class="grid-item card"
-                    style="background-color: white; border-radius: 8px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); max-width: 180px; padding: 8px; position: relative;">
-
-                    <div class="d-flex justify-content-between">
-                        <div class="dropdown" style="position: absolute; top: 8px; right: 8px;">
-                            <a href="javascript:void(0);" id="dropdownMenuLink{{ $photo->id }}"
-                                data-bs-toggle="dropdown" aria-expanded="false" style="color: #000;">
-                                <i class="bx bx-dots-vertical-rounded" style="font-size: 1.5rem;"></i>
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ $photo->id }}">
-                                <li>
-                                    <a class="dropdown-item" data-bs-target="#modal-edit-photo-{{ $photo->id }}"
-                                        data-bs-toggle="modal">Edit</a>
-                                </li>
-                                <li>
-                                    <form action="" method="POST"
-                                        onsubmit="return confirm('Yakin ingin menghapus item ini?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="dropdown-item">Hapus</button>
-                                    </form>
-                                </li>
-                            </ul>
-
-                            <div class="modal fade" id="modal-edit-photo-{{ $photo->id }}" tabindex="-1"
-                                aria-labelledby="modal-edit-label-{{ $photo->id }}" aria-hidden="true">
-                                <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="modal-edit-label-{{ $photo->id }}">Edit
-                                                {{ $photo->name }}</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form action="{{ route('katalog.updatePhoto', ['id' => $photo->id]) }}"
-                                                method="POST" enctype="multipart/form-data">
-                                                @csrf
-                                                @method('PUT')
-                                                <div class="mb-3">
-                                                    <label for="thumbnail-{{ $photo->id }}"
-                                                        class="form-label">Thumbnail</label>
-                                                    <input type="file" class="form-control"
-                                                        id="thumbnail-{{ $photo->id }}" name="thumbnail">
-                                                    @if ($photo->thumbnail)
-                                                        <img id="thumbnail-preview-{{ $photo->id }}"
-                                                            src="{{ asset($photo->thumbnail) }}" alt="Preview"
-                                                            style="margin-top:10px; max-width:100px;" />
-                                                    @endif
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label for="name-{{ $photo->id }}"
-                                                        class="form-label">Judul</label>
-                                                    <input type="text" class="form-control"
-                                                        id="name-{{ $photo->id }}" name="name"
-                                                        value="{{ $photo->name }}" required>
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label for="variasi-{{ $photo->id }}"
-                                                        class="form-label">Variasi</label>
-                                                    <input type="text" class="form-control"
-                                                        id="variasi-{{ $photo->id }}" name="variasi"
-                                                        value="{{ $photo->variasi }}" required>
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label for="description-{{ $photo->id }}"
-                                                        class="form-label">Description</label>
-                                                    <textarea class="form-control" id="description-{{ $photo->id }}" name="description" rows="3" required>{{ $photo->description }}</textarea>
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label for="link_url-{{ $photo->id }}"
-                                                        class="form-label">Link Url</label>
-                                                    <input type="text" class="form-control"
-                                                        id="link_url-{{ $photo->id }}" name="link_url"
-                                                        value="{{ $photo->link_url }}" required>
-                                                </div>
-
-                                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                                    <button type="submit" class="btn btn-primary">Update</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
+            @foreach ($dataPhotos as $data)
+                @php
+                    $filePhoto = $photos->where('photo_id', $data->id)->first();
+                @endphp
+                @if ($filePhoto)
+                    <div class="grid-item card"
+                        style="background-color: white; border-radius: 8px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); max-width: 180px; padding: 8px; position: relative;">
+                        <div class="d-flex justify-content-between">
+                            <div class="dropdown" style="position: absolute; top: 8px; right: 8px;">
+                                <a href="javascript:void(0);" id="dropdownMenuLink{{ $data->id }}"
+                                    data-bs-toggle="dropdown" aria-expanded="false" style="color: #000;">
+                                    <i class="bx bx-dots-vertical-rounded" style="font-size: 1.5rem;"></i>
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ $data->id }}">
+                                    <li>
+                                        <a class="dropdown-item" data-bs-target="#modal-edit-photo-{{ $data->id }}"
+                                            data-bs-toggle="modal">Edit</a>
+                                    </li>
+                                    <li>
+                                        <form action="{{ route('katalog.destroyPhoto', ['id' => $data->id]) }}"
+                                            method="POST" onsubmit="return confirm('Yakin ingin menghapus item ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="dropdown-item">Hapus</button>
+                                        </form>
+                                    </li>
+                                </ul>
                             </div>
+
+                            <h5 class="card-title"
+                                style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; text-align: left;">
+                                {{ Str::limit($data->name, 18) }}
+                            </h5>
                         </div>
 
-                        <h5 class="card-title"
-                            style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; text-align: left;">
-                            @php
-                                if (strlen($photo->name) > 21) {
-                                    echo substr($photo->name, 0, 21) . '...';
-                                } else {
-                                    echo $photo->name;
-                                }
-                            @endphp
-                        </h5>
-                    </div>
+                        <div style="width: 100%; height: 150px; overflow: hidden; border-radius: 6px;">
+                            <img src="{{ asset($filePhoto->file_name) }}" alt="{{ $data->name }}"
+                                style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+                                onmouseenter="showSmallModal('{{ asset($filePhoto->file_name) }}', '{{ $data->name }}', '{{ $data->description }}', this)"
+                                onmouseleave="hideSmallModal()"
+                                onclick="window.location.href='{{ route('katalog.photoDetail', ['photoId' => $data->id]) }}';">
+                        </div>
 
-                    <div style="width: 100%; height: 150px; overflow: hidden; border-radius: 6px;">
-                        <img src="{{ asset($photo->thumbnail) }}" alt="{{ $photo->name }}"
-                            style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
-                            onmouseenter="showSmallModal('{{ asset($photo->thumbnail) }}', '{{ $photo->name }}', '{{ $photo->description }}', this)"
-                            onmouseleave="hideSmallModal()"
-                            onclick="window.location.href='{{ route('katalog.photoDetail', ['photoId' => $photo->id]) }}';">
+                        <div class="card-body" style="padding: 8px;">
+                            <p class="card-text"
+                                style="color: #6c757d; font-size: 0.8rem; text-align: left; margin-top: 6px;">
+                                {{ Str::limit($data->description, 18) }}
+                            </p>
+                        </div>
                     </div>
-
-                    <div class="card-body" style="padding: 8px;">
-                        <p class="card-text"
-                            style="color: #6c757d; font-size: 0.8rem; text-align: left; margin-top: 6px;">
-                            @php
-                                if (strlen($photo->description) > 21) {
-                                    echo substr($photo->description, 0, 21) . '...';
-                                } else {
-                                    echo $photo->description;
-                                }
-                            @endphp
-                        </p>
-                    </div>
-                </div>
+                @endif
             @endforeach
         </div>
     @endif
 
     <div id="smallImageModal" onmouseenter="keepSmallModalVisible()" onmouseleave="hideSmallModal()"
         style="position: absolute; display: none;">
-        <img id="smallModalImage" style="width: 100%; height: auto; object-fit: contain; border-radius: 8px; margin-bottom: 8px;">
+        <img id="smallModalImage"
+            style="width: 100%; height: auto; object-fit: contain; border-radius: 8px; margin-bottom: 8px;">
         <div class="card-body">
             <h5 id="smallModalTitle" style="text-align: justify;"></h5>
             <p id="smallModalDescription" class="card-text" style="text-align: justify; color: #6c757d;">
@@ -420,21 +355,86 @@
         });
     </script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const descriptionInput = document.getElementById('description');
-        const charCount = document.getElementById('charCount');
+    <script>
+        var uploadedDocumentMap = {};
 
-        descriptionInput.addEventListener('input', function() {
-            const currentLength = descriptionInput.value.length;
-            charCount.textContent = `${currentLength}/255 Characters`;
+        Dropzone.options.photoDropzone = {
+            url: '{{ route('projects.storeMedia') }}',
+            paramName: "file_name[]",
+            maxFilesize: 2,
+            acceptedFiles: "image/*",
+            dictDefaultMessage: "Drop files here or click to upload",
+            addRemoveLinks: true,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            success: function(file, response) {
+                $('#photoDetailsForm').append('<input type="hidden" name="file_name[]" value="' + response.files[0]
+                    .file_name + '">');
+                uploadedDocumentMap[file.name] = response.files[0].file_name;
 
-            if (currentLength >= 255) {
-                charCount.style.color = 'red';
-            } else {
-                charCount.style.color = 'black';
-            }
+                var fileNameLink = document.createElement("a");
+                fileNameLink.textContent = file.name;
+                fileNameLink.href = '{{ asset('uploads/file/photos') }}/' + response.files[0].file_name;
+                fileNameLink.target = "_blank";
+                fileNameLink.className = "link-style";
+
+                file.previewElement.querySelector(".dz-filename").innerHTML = '';
+                file.previewElement.querySelector(".dz-filename").appendChild(fileNameLink);
+            },
+            removedfile: function(file) {
+                file.previewElement.remove();
+                var name = uploadedDocumentMap[file.name];
+                $('form').find('input[name="file_name[]"][value="' + name + '"]').remove();
+            },
+        };
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const description = document.getElementById('description');
+            const charCount = document.getElementById('charCount');
+
+            description.addEventListener('input', function() {
+                charCount.textContent = `${description.value.length}/255 characters`;
+            });
         });
-    });
-</script>
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Menangani penambahan variasi
+            const addButton = document.getElementById('add-variasi');
+            const variationsList = document.getElementById('variasi-list');
+            let count = 1; // Untuk memastikan ID unik jika diperlukan
+
+            addButton.addEventListener('click', function() {
+                const inputValue = document.getElementById('variasi').value;
+                if (inputValue.trim() === '') {
+                    alert('Masukkan variasi terlebih dahulu.');
+                    return;
+                }
+
+                // Membuat elemen variasi baru
+                const div = document.createElement('div');
+                div.className = 'input-group mb-2';
+                div.innerHTML = `
+        <input type="text" class="form-control" name="variasi[]" value="${inputValue}" readonly>
+        <button type="button" class="btn btn-outline-danger remove-variasi" data-id="${count}">-</button>
+    `;
+                variationsList.appendChild(div);
+
+                // Reset input
+                document.getElementById('variasi').value = '';
+                count++;
+            });
+
+            // Menangani penghapusan variasi
+            variationsList.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-variasi')) {
+                    e.target.parentElement.remove();
+                }
+            });
+        });
+    </script>
 @endsection

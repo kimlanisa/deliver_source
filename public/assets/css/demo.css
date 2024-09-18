@@ -194,7 +194,8 @@
     gap: 16px;
 }
 
-.grid-sizer, .grid-item {
+.grid-sizer,
+.grid-item {
     width: 20%;
 }
 
@@ -266,27 +267,71 @@
     max-height: 250px;
 }
 
-.main-image img {
-    border: 2px;
-    border-radius: 8px;
-}
-
-.photo-thumbnail img {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    width: 100%; 
+.variasi-container {
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .variasi-item {
     display: inline-block;
-    border: 1px solid #000;
+    border: 1px solid #818181;
     padding: 5px;
     margin-right: 5px;
     border-radius: 4px;
 }
 
+.link-file-name {
+    font-size: 14px;
+    color: white;
+    text-align: center;
+    background-color: #5b7faf;
+    margin-top: 5px;
+    border-radius: 15px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 7px;
+    padding-right: 7px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: "Montserrat";
+}
 
+.link-file-name:hover {
+    text-decoration: none;
+    background-color: #5b7faf6a;
+}
 
+.main-thumbnail {
+    width: 90%; /* Make sure the main image fills its container */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 4px; /* Optional: Adds rounded corners */
+}
 
+.photo-thumbnails {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px; /* Reduced gap between thumbnails */
+}
 
+.photo-thumbnail {
+    flex: 1 1 auto; /* Allow thumbnails to grow/shrink as needed */
+    max-width: 25%; /* Adjust this value if you need different sizing */
+}
+
+.thumbnail-img {
+    width: 100%; /* Make sure the image fills its container */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 4px; /* Optional: Adds rounded corners */
+}
+
+.variasi-container {
+    margin-top: 10px; /* Reduced margin between variations and other elements */
+}
+
+.variasi-item {
+    display: inline-block;
+    border: 1px solid #747474;
+    padding: 5px;
+    margin-right: 5px;
+    border-radius: 4px;
+}
 

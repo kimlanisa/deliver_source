@@ -10,7 +10,7 @@ class PhotoKatalog extends Model
     use HasFactory;
 
     protected $table = 'photo_katalog';
-    protected $fillable = ['name', 'description', 'thumbnail', 'parents_id', 'childs_id', 'grand_childs_id', 'variasi', 'link_url'];
+    protected $fillable = ['name', 'description', 'parents_id', 'childs_id', 'grand_childs_id', 'link_url'];
 
     public function parents()
     {
@@ -29,7 +29,17 @@ class PhotoKatalog extends Model
 
     public function getPhotoAttribute($value)
     {
-        return asset($value); 
+        return asset($value);
+    }
+
+    public function files()
+    {
+        return $this->hasMany(FilePhoto::class, 'photo_id');
+    }
+
+    public function variasi()
+    {
+        return $this->hasMany(Variasi::class, 'photo_id');
     }
 
 }

@@ -34,30 +34,37 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('katalog.storePhoto') }}" method="POST" enctype="multipart/form-data">
+                    <form class="dropzone" id="photoDropzone" method="POST" enctype="multipart/form-data">
                         @csrf
-                        <div class="mb-3">
-                            <label for="thumbnail" class="form-label">Thumbnail</label>
-                            <input type="file" class="form-control" id="thumbnail" name="thumbnail" required>
-                            <img id="thumbnail-preview" src="#" alt="Preview"
-                                style="display:none; margin-top:10px; max-width:100px;" />
+                        <div class="dz-message" data-dz-message><span>Drag & drop or click to upload your photos</span>
                         </div>
-                        <div class="mb-3">
+                        <div class="fallback">
+                            <input name="file_name[]" type="file" multiple />
+                        </div>
+                    </form>
+
+                    <form id="photoDetailsForm" method="POST" action="{{ route('katalog.storeDetailPhoto') }}">
+                        @csrf
+                        <div class="mb-3 mt-4">
                             <label for="name" class="form-label">Judul</label>
                             <input type="text" class="form-control" id="name" name="name" required>
                         </div>
                         <div class="mb-3">
                             <label for="variasi" class="form-label">Variasi</label>
-                            <input type="text" class="form-control" id="variasi" name="variasi" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" maxlength="255" required></textarea>
-                            <div id="charCount" class="form-text">0/255 characters</div>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="variasi" name="variasi[]" required>
+                                <button type="button" class="btn btn-outline-light" id="add-variasi">+</button>
+                            </div>
+                            <div id="variasi-list" class="mt-2"></div>
                         </div>
                         <div class="mb-3">
                             <label for="link_url" class="form-label">Link Url</label>
                             <input type="text" class="form-control" id="link_url" name="link_url" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" maxlength="255" required></textarea>
+                            <div id="charCount" class="form-text text-end">0/255 characters</div>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <button type="submit" class="btn btn-primary">Create</button>
@@ -103,8 +110,7 @@
     </div>
 
     @if ($data->isNotEmpty())
-        {{-- @include('layouts._message') --}}
-        
+    <p class="mb-4">Folder Terbaru</p>
         <div class="grid"
             data-masonry='{ "itemSelector": ".grid-item", "columnWidth": ".grid-sizer", "percentPosition": true }'>
             <div class="grid-sizer"></div>
@@ -221,6 +227,63 @@
         </div>
     @endif
 
+    @if ($photo->isNotEmpty())
+        <p class="mb-4">Photo Terbaru</p>
+        <div class="grid"
+            data-masonry='{ "itemSelector": ".grid-item", "columnWidth": ".grid-sizer", "percentPosition": true }'>
+            <div class="grid-sizer"></div>
+            @foreach ($photo as $data)
+                <div class="grid-item card"
+                    style="background-color: white; border-radius: 8px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); max-width: 180px; padding: 8px; position: relative;">
+
+                    <div class="dropdown" style="position: absolute; top: 8px; right: 8px;">
+                        <a href="javascript:void(0);" id="dropdownMenuLink{{ $data->id }}" data-bs-toggle="dropdown"
+                            aria-expanded="false" style="color: #000;">
+                            <i class="bx bx-dots-vertical-rounded" style="font-size: 1.5rem;"></i>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ $data->id }}">
+                            <li>
+                                <a class="dropdown-item" data-bs-target="#modal-edit-photo-{{ $data->id }}"
+                                    data-bs-toggle="modal">Edit</a>
+                            </li>
+                            <li>
+                                <form action="{{ route('katalog.destroyPhoto', ['id' => $data->id]) }}" method="POST"
+                                    onsubmit="return confirm('Yakin ingin menghapus item ini?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="dropdown-item">Hapus</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <h5 class="card-title"
+                        style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; text-align: left;">
+                        {{ Str::limit($data->name, 18) }}
+                    </h5>
+
+                    <div style="width: 100%; height: 150px; overflow: hidden; border-radius: 6px;">
+                        <img src="{{ asset($data->files->first()->file_name) }}" alt="{{ $data->name }}"
+                            style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+                            onmouseenter="showSmallModal('{{ asset($data->files->first()->file_name) }}', '{{ $data->name }}', '{{ $data->description }}', this)"
+                            onmouseleave="hideSmallModal()"
+                            onclick="window.location.href='{{ route('katalog.photoDetail', ['photoId' => $data->id]) }}';">
+                    </div>
+
+                    <div class="card-body" style="padding: 8px;">
+                        <p class="card-text"
+                            style="color: #6c757d; font-size: 0.8rem; text-align: left; margin-top: 6px;">
+                            {{ Str::limit($data->description, 18) }}
+                        </p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @else
+        <p class="text-center">No photos available at the moment.</p>
+    @endif
+
+
     <div id="smallImageModal" onmouseenter="keepSmallModalVisible()" onmouseleave="hideSmallModal()"
         style="position: absolute; display: none;">
         <img id="smallModalImage"
@@ -291,18 +354,147 @@
     </script>
 
     <script>
+        var uploadedDocumentMap = {};
+
+        // Dropzone.options.photoDropzone = {
+        //     url: '{{ route('projects.storeMedia') }}',
+        //     paramName: "file_name[]",
+        //     maxFilesize: 2,
+        //     acceptedFiles: "image/*",
+        //     dictDefaultMessage: "Drop files here or click to upload",
+        //     addRemoveLinks: true,
+        //     headers: {
+        //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        //     },
+        //     success: function(file, response) {
+        //         $('form').append('<input type="hidden" name="file_name[]" value="' + response.file_name + '">');
+        //         uploadedDocumentMap[file.name] = response.file_name;
+
+        //         var fileNameLink = document.createElement("a");
+        //         fileNameLink.textContent = file.name;
+        //         fileNameLink.href = '{{ asset('uploads/file/dataPhotos') }}/' + response.file_name;
+        //         fileNameLink.target = "_blank";
+        //         fileNameLink.className = "link-style";
+
+        //         file.previewElement.querySelector(".dz-filename").innerHTML = '';
+        //         file.previewElement.querySelector(".dz-filename").appendChild(fileNameLink);
+        //     },
+
+        //     // success: function(file, response) {
+        //     //     $('form').append('<input type="hidden" name="file_name[]" value="' + response.name + '">');
+        //     //     uploadedDocumentMap[file.name] = response.name;
+
+        //     //     var fileNameLink = document.createElement("a");
+        //     //     fileNameLink.textContent = file.name;
+        //     //     fileNameLink.href = '{{ asset('uploads/file/photos') }}/' + response.name;
+        //     //     fileNameLink.target = "_blank";
+        //     //     fileNameLink.className = "link-style";
+
+        //     //     file.previewElement.querySelector(".dz-filename").innerHTML = '';
+        //     //     file.previewElement.querySelector(".dz-filename").appendChild(fileNameLink);
+        //     // },
+        //     removedfile: function(file) {
+        //         file.previewElement.remove();
+        //         var name = '';
+        //         if (typeof file.file_name !== 'undefined') {
+        //             name = file.file_name;
+        //         } else {
+        //             name = uploadedDocumentMap[file.name];
+        //         }
+        //         $('form').find('input[name="file_name[]"][value="' + name + '"]').remove();
+        //     },
+        //     init: function() {
+        //         @if (isset($project) && $project->file_name)
+        //             var files = {!! json_encode($project->file_name) !!};
+        //             for (var i in files) {
+        //                 var file = files[i];
+        //                 this.options.addedfile.call(this, file);
+        //                 file.previewElement.classList.add('dz-complete');
+        //                 $('form').append('<input type="hidden" name="file_name[]" value="' + file.file_name + '">');
+
+        //                 var fileNameLink = document.createElement("a");
+        //                 fileNameLink.textContent = file.file_name;
+        //                 fileNameLink.href = '{{ asset('uploads/file/photos') }}/' + file.file_name;
+        //                 fileNameLink.target = "_blank";
+        //                 fileNameLink.className = "link-style";
+
+        //                 file.previewElement.querySelector(".dz-filename").innerHTML = '';
+        //                 file.previewElement.querySelector(".dz-filename").appendChild(fileNameLink);
+        //             }
+        //         @endif
+        //     }
+        // };
+        Dropzone.options.photoDropzone = {
+            url: '{{ route('projects.storeMedia') }}',
+            paramName: "file_name[]",
+            maxFilesize: 2,
+            acceptedFiles: "image/*",
+            dictDefaultMessage: "Drop files here or click to upload",
+            addRemoveLinks: true,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            success: function(file, response) {
+                $('#photoDetailsForm').append('<input type="hidden" name="file_name[]" value="' + response.files[0]
+                    .file_name + '">');
+                uploadedDocumentMap[file.name] = response.files[0].file_name;
+
+                var fileNameLink = document.createElement("a");
+                fileNameLink.textContent = file.name;
+                fileNameLink.href = '{{ asset('uploads/file/photos') }}/' + response.files[0].file_name;
+                fileNameLink.target = "_blank";
+                fileNameLink.className = "link-style";
+
+                file.previewElement.querySelector(".dz-filename").innerHTML = '';
+                file.previewElement.querySelector(".dz-filename").appendChild(fileNameLink);
+            },
+            removedfile: function(file) {
+                file.previewElement.remove();
+                var name = uploadedDocumentMap[file.name];
+                $('form').find('input[name="file_name[]"][value="' + name + '"]').remove();
+            },
+        };
+    </script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const descriptionInput = document.getElementById('description');
+            const description = document.getElementById('description');
             const charCount = document.getElementById('charCount');
 
-            descriptionInput.addEventListener('input', function() {
-                const currentLength = descriptionInput.value.length;
-                charCount.textContent = `${currentLength}/255 characters`;
+            description.addEventListener('input', function() {
+                charCount.textContent = `${description.value.length}/255 characters`;
+            });
+        });
+    </script>
 
-                if (currentLength >= 255) {
-                    charCount.style.color = 'red';
-                } else {
-                    charCount.style.color = 'black';
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addButton = document.getElementById('add-variasi');
+            const variationsList = document.getElementById('variasi-list');
+            let count = 1; 
+
+            addButton.addEventListener('click', function() {
+                const inputValue = document.getElementById('variasi').value;
+                if (inputValue.trim() === '') {
+                    alert('Masukkan variasi terlebih dahulu.');
+                    return;
+                }
+
+                const div = document.createElement('div');
+                div.className = 'input-group mb-2';
+                div.innerHTML = `
+        <input type="text" class="form-control" name="variasi[]" value="${inputValue}" readonly>
+        <button type="button" class="btn btn-outline-danger remove-variasi" data-id="${count}">-</button>
+    `;
+                variationsList.appendChild(div);
+
+                document.getElementById('variasi').value = '';
+                count++;
+            });
+
+            variationsList.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-variasi')) {
+                    e.target.parentElement.remove();
                 }
             });
         });

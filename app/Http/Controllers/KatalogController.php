@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChildsCategoriesKatalog;
+use App\Models\FilePhoto;
 use App\Models\GrandChildsCategoriesKatalog;
 use App\Models\ParentsCategoriesKatalog;
 use App\Models\PhotoKatalog;
+use App\Models\Variasi;
+use Facade\FlareClient\Stacktrace\File;
 use Illuminate\Http\Request;
+use Log;
 
 class KatalogController extends Controller
 {
@@ -15,7 +19,9 @@ class KatalogController extends Controller
     {
         $data = ParentsCategoriesKatalog::all();
 
-        return view('katalog.index', compact('data'));
+        $photo = PhotoKatalog::with('files')->get();
+
+        return view('katalog.index', compact('data', 'photo'));
     }
 
     public function store(Request $request)
@@ -75,32 +81,32 @@ class KatalogController extends Controller
     public function storeChild(Request $request)
     {
         // try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string|max:1000',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            ]);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
 
-            $dataPost = $request->only(['name', 'description']);
-            $dataPost['parents_id'] = $request->parents_id;
+        $dataPost = $request->only(['name', 'description']);
+        $dataPost['parents_id'] = $request->parents_id;
 
-            if ($request->hasFile('thumbnail')) {
-                $file = $request->file('thumbnail');
-                $filename = 'thumbnail_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
-                $destinationPath = 'uploads/file/thumbnail';
-                $file->move($destinationPath, $filename);
-                $dataPost['thumbnail'] = $destinationPath . '/' . $filename;
-            }
+        if ($request->hasFile('thumbnail')) {
+            $file = $request->file('thumbnail');
+            $filename = 'thumbnail_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
+            $destinationPath = 'uploads/file/thumbnail';
+            $file->move($destinationPath, $filename);
+            $dataPost['thumbnail'] = $destinationPath . '/' . $filename;
+        }
 
-            $newCategory = ChildsCategoriesKatalog::create($dataPost);
+        $newCategory = ChildsCategoriesKatalog::create($dataPost);
 
-            return redirect()->route('katalog.detail', [
-                'parentId' => $request->parents_id,
-                'childId' => $newCategory->id,
-            ])->with('success', $dataPost['name'] . ' berhasil disimpan!');
+        return redirect()->route('katalog.detail', [
+            'parentId' => $request->parents_id,
+            'childId' => $newCategory->id,
+        ])->with('success', $dataPost['name'] . ' berhasil disimpan!');
         // } catch (\Exception $e) {
-            // \Log::error("Error occurred while storing the data: " . $e->getMessage());
-            // return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
+        // \Log::error("Error occurred while storing the data: " . $e->getMessage());
+        // return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
         // }
     }
 
@@ -141,57 +147,57 @@ class KatalogController extends Controller
         }
     }
 
-    public function storePhoto(Request $request)
-    {
-        try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string|max:1000',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'variasi' => 'nullable|string|max:255',
-                'link_url' => 'nullable|string|max:255',
-            ]);
+    // public function storePhoto(Request $request)
+    // {
+    //     try {
+    //         $request->validate([
+    //             'name' => 'required|string|max:255',
+    //             'description' => 'nullable|string|max:1000',
+    //             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    //             'variasi' => 'nullable|string|max:255',
+    //             'link_url' => 'nullable|string|max:255',
+    //         ]);
 
-            $dataPost = $request->only(['name', 'description', 'link_url']);
+    //         $dataPost = $request->only(['name', 'description', 'link_url']);
 
-            if ($request->filled('parents_id')) {
-                $dataPost['parents_id'] = $request->parents_id;
-            }
+    //         if ($request->filled('parents_id')) {
+    //             $dataPost['parents_id'] = $request->parents_id;
+    //         }
 
-            if ($request->filled('childs_id')) {
-                $dataPost['childs_id'] = $request->childs_id;
-            }
+    //         if ($request->filled('childs_id')) {
+    //             $dataPost['childs_id'] = $request->childs_id;
+    //         }
 
-            if ($request->filled('grand_childs_id')) {
-                $dataPost['grand_childs_id'] = $request->grand_childs_id;
-            }
+    //         if ($request->filled('grand_childs_id')) {
+    //             $dataPost['grand_childs_id'] = $request->grand_childs_id;
+    //         }
 
-            if ($request->hasFile('thumbnail')) {
-                $file = $request->file('thumbnail');
-                $filename = 'thumbnail_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
-                $destinationPath = 'uploads/file/thumbnail';
-                $file->move($destinationPath, $filename);
-                $dataPost['thumbnail'] = $destinationPath . '/' . $filename;
-            }
+    //         if ($request->hasFile('thumbnail')) {
+    //             $file = $request->file('thumbnail');
+    //             $filename = 'thumbnail_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
+    //             $destinationPath = 'uploads/file/thumbnail';
+    //             $file->move($destinationPath, $filename);
+    //             $dataPost['thumbnail'] = $destinationPath . '/' . $filename;
+    //         }
 
-            if ($request->filled('variasi')) {
-                $variasiArray = explode(',', $request->input('variasi'));
-                $variasiArray = array_map('trim', $variasiArray);
-                $dataPost['variasi'] = implode(', ', $variasiArray);
-            }
+    //         if ($request->filled('variasi')) {
+    //             $variasiArray = explode(',', $request->input('variasi'));
+    //             $variasiArray = array_map('trim', $variasiArray);
+    //             $dataPost['variasi'] = implode(', ', $variasiArray);
+    //         }
 
-            // dd($dataPost);
+    //         // dd($dataPost);
 
-            \Log::info("Data yang akan disimpan: ", $dataPost);
-            $result = PhotoKatalog::create($dataPost);
-            \Log::info("Data berhasil disimpan: ", $result->toArray());
+    //         \Log::info("Data yang akan disimpan: ", $dataPost);
+    //         $result = PhotoKatalog::create($dataPost);
+    //         \Log::info("Data berhasil disimpan: ", $result->toArray());
 
-            return redirect()->to(url()->previous())->with('success', $dataPost['name'] . ' berhasil disimpan!');
-        } catch (\Exception $e) {
-            \Log::error("Error occurred while storing the data: " . $e->getMessage());
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
-        }
-    }
+    //         return redirect()->to(url()->previous())->with('success', $dataPost['name'] . ' berhasil disimpan!');
+    //     } catch (\Exception $e) {
+    //         \Log::error("Error occurred while storing the data: " . $e->getMessage());
+    //         return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
+    //     }
+    // }
 
     public function storeGrandChild(Request $request)
     {
@@ -263,9 +269,11 @@ class KatalogController extends Controller
     {
         $parents = ParentsCategoriesKatalog::where('id', $id)->with('childs')->firstOrFail();
 
-        $photos = PhotoKatalog::where('parents_id', $id)->get();
+        $dataPhotos = PhotoKatalog::where('parents_id', $id)->get();
 
-        return view('katalog.show', compact('parents', 'photos'));
+        $photos = FilePhoto::whereIn('photo_id', $dataPhotos->pluck('id'))->get();
+
+        return view('katalog.show', compact('parents', 'photos', 'dataPhotos'));
     }
 
     public function detail($parentId, $childId)
@@ -278,9 +286,11 @@ class KatalogController extends Controller
             ->with('grand_childs')
             ->firstOrFail();
 
-        $photos = PhotoKatalog::where('childs_id', $childId)->get();
+        $dataPhotos = PhotoKatalog::where('childs_id', $childId)->get();
 
-        return view('katalog.detail', compact('childs', 'parents', 'photos'));
+        $photos = FilePhoto::whereIn('photo_id', $dataPhotos->pluck('id'))->get();
+
+        return view('katalog.detail', compact('childs', 'parents', 'photos', 'dataPhotos'));
     }
 
     public function getParentDetail($parentId)
@@ -398,17 +408,170 @@ class KatalogController extends Controller
 
     public function photoDetail($photoId)
     {
-        $photo = PhotoKatalog::findOrFail($photoId);
+        $photo = PhotoKatalog::with('files')->findOrFail($photoId);
 
-        if (!is_null($photo->grand_childs_id)) {
-            $mainImage = GrandChildsCategoriesKatalog::where('id', $photo->grand_childs_id)->first();
-        } elseif (!is_null($photo->childs_id)) {
-            $mainImage = ChildsCategoriesKatalog::where('id', $photo->childs_id)->first();
-        } elseif (!is_null($photo->parents_id)) {
-            $mainImage = ParentsCategoriesKatalog::where('id', $photo->parents_id)->first();
+        $files = $photo->files;
+
+        $thumbnailImage = $files->first();
+
+        $mainImages = $files->slice(1);
+
+        $variasi = Variasi::where('photo_id', $photoId)->get();
+
+        return view('katalog.photo_detail', compact('photo', 'thumbnailImage', 'mainImages', 'variasi'));
+    }
+
+    public function storeMedia(Request $request)
+    {
+        $request->validate([
+            'file_name.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        try {
+            $fileData = [];
+
+            if ($request->hasFile('file_name')) {
+                foreach ($request->file('file_name') as $file) {
+                    $filename = 'photo_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
+                    $destinationPath = 'uploads/file/photos';
+                    $file->move(public_path($destinationPath), $filename);
+
+                    $fileData[] = [
+                        'file_name' => $filename,
+                        'file_path' => $destinationPath . '/' . $filename,
+                    ];
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'files' => $fileData,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error uploading photos: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function storeDetailPhoto(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'variasi' => 'required|array',
+            'variasi.*' => 'string|max:255',
+            'description' => 'required|string|max:255',
+            'link_url' => 'required|string',
+            'file_name.*' => 'required|string',
+        ]);
+
+        $photoData = [
+            'name' => $request->name,
+            'description' => $request->description,
+            'link_url' => $request->link_url,
+        ];
+
+        if ($request->filled('parents_id')) {
+            $photoData['parents_id'] = $request->parents_id;
         }
 
-        return view('katalog.photo_detail', compact('photo', 'mainImage'));
+        if ($request->filled('childs_id')) {
+            $photoData['childs_id'] = $request->childs_id;
+        }
+
+        if ($request->filled('grand_childs_id')) {
+            $photoData['grand_childs_id'] = $request->grand_childs_id;
+        }
+
+        $photo = PhotoKatalog::create($photoData);
+
+        foreach ($request->variasi as $variasi) {
+            Variasi::create([
+                'photo_id' => $photo->id,
+                'name' => $variasi,
+            ]);
+        }
+
+        $fileNames = $request->input('file_name', []);
+        foreach ($fileNames as $fileName) {
+            FilePhoto::create([
+                'photo_id' => $photo->id,
+                'file_name' => $fileName,
+                'file_path' => 'uploads/file/photos/' . $fileName,
+            ]);
+        }
+        
+        return redirect()->to(url()->previous())->with('success', 'Berhasil disimpan!');
+    }
+
+    public function updateDetailPhoto(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'variasi' => 'required|array',
+            'variasi.*' => 'string|max:255',
+            'description' => 'required|string|max:255',
+            'link_url' => 'required|string',
+            'file_name.*' => 'required|string',
+        ]);
+
+        $photoData = [
+            'name' => $request->name,
+            'description' => $request->description,
+            'link_url' => $request->link_url,
+        ];
+
+        if ($request->filled('parents_id')) {
+            $photoData['parents_id'] = $request->parents_id;
+        }
+
+        if ($request->filled('childs_id')) {
+            $photoData['childs_id'] = $request->childs_id;
+        }
+
+        if ($request->filled('grand_childs_id')) {
+            $photoData['grand_childs_id'] = $request->grand_childs_id;
+        }
+
+        $photo = PhotoKatalog::findOrFail($request->id);
+        $photo->update($photoData);
+
+        $photo->variasi()->delete();
+        foreach ($request->variasi as $variasi) {
+            Variasi::create([
+                'photo_id' => $photo->id,
+                'name' => $variasi,
+            ]);
+        }
+
+        $fileNames = $request->input('file_name', []);
+        $photo->files()->delete();
+        foreach ($fileNames as $fileName) {
+            FilePhoto::create([
+                'photo_id' => $photo->id,
+                'file_name' => $fileName,
+                'file_path' => 'uploads/file/photos/' . $fileName,
+            ]);
+        }
+
+        return redirect()->to(url()->previous())->with('success', 'Berhasil diupdate!');
+    }
+
+    public function deleteMedia(Request $request)
+    {
+        $fileName = $request->input('file_name');
+        $filePath = public_path('uploads/file/photos/' . $fileName);
+
+        if (file_exists($filePath)) {
+            unlink($filePath);
+
+            FilePhoto::where('file_name', $fileName)->delete();
+
+            return response()->json(['success' => true, 'message' => 'File deleted successfully.']);
+        }
+
+        return response()->json(['success' => false, 'message' => 'File not found.'], 404);
     }
 
 }

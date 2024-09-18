@@ -38,6 +38,7 @@
     <script src="{{ asset('assets/js/config.js') }}"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
+    
 </head>
 
 
@@ -64,7 +65,7 @@
                 <ul class="menu-inner py-1">
                     <li class="menu-item {{ request()->is('katalog') ? 'active open' : '' }}">
                         <a href="{{ '/katalog' }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-home-smile"></i>
+                            {{-- <i class="menu-icon tf-icons bx bx-home-smile"></i> --}}
                             <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
                         </a>
                     </li>
@@ -89,7 +90,7 @@
 
                         <li class="menu-item {{ $isActiveParent ? 'active open' : '' }}">
                             <a href="{{ route('katalog.show', $folder->id) }}" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-collection"></i>
+                                {{-- <i class="menu-icon tf-icons bx bx-collection"></i> --}}
                                 <div class="text-truncate" data-i18n="Layouts">{{ $folder->name }}</div>
                                 <i class="tf-icons bx bx-chevron-right arrow-icon"></i>
                             </a>
