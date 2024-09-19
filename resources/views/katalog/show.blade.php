@@ -51,22 +51,22 @@
                         <div class="mb-3">
                             <label for="variasi" class="form-label">Variasi</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="variasi" name="variasi[]" required>
-                                <button type="button" class="btn btn-outline-light" id="add-variasi">+</button>
+                                <input type="text" class="form-control" id="variasi" name="variasi[]">
+                                <button type="button" class="btn btn-primary" id="add-variasi">+</button>
                             </div>
                             <div id="variasi-list" class="mt-2"></div>
                         </div>
                         <div class="mb-3">
                             <label for="link_url" class="form-label">Link Url</label>
-                            <input type="text" class="form-control" id="link_url" name="link_url" required>
+                            <input type="text" class="form-control" id="link_url" name="link_url">
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" maxlength="255" required></textarea>
+                            <textarea class="form-control" id="description" name="description" rows="3" maxlength="255"></textarea>
                             <div id="charCount" class="form-text text-end">0/255 characters</div>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button type="submit" class="btn btn-primary">Create</button>
+                            <button type="submit" class="btn btn-primary">Upload</button>
                         </div>
                     </form>
                 </div>
@@ -74,7 +74,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal-create-folder" tabindex="-1" aria-labelledby="modal-add-label" aria-hidden="true">
+    {{-- <div class="modal fade" id="modal-create-folder" tabindex="-1" aria-labelledby="modal-add-label" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -95,10 +95,50 @@
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            <textarea class="form-control" id="description1" name="description" rows="3" required></textarea>
+                            <div id="charCount1" class="form-text text-end">0/255 characters</div>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button type="submit" class="btn btn-primary">Upload</button>
+                            <button type="submit" class="btn btn-primary">Create</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div> --}}
+
+    <!-- Modal Create Folder -->
+    <div class="modal fade" id="modal-create-folder" tabindex="-1" aria-labelledby="modal-add-label" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-add-label">Create Folder</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ route('katalog.storeChild') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" name="parents_id" value="{{ $parents->id }}">
+                        <div class="mb-3">
+                            <label for="thumbnail" class="form-label">Thumbnail</label>
+                            <input type="file" class="form-control" id="thumbnail" name="thumbnail" required>
+                            <!-- Preview Image -->
+                            <div class="mt-3">
+                                <img id="thumbnail-preview" src="" alt="Image Preview"
+                                    style="display:none; max-width: 200px;">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Judul</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description1" class="form-label">Description</label>
+                            <textarea class="form-control" id="description1" name="description" rows="3" required></textarea>
+                            <div id="charCount1" class="form-text text-end">0/255 characters</div>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">Create</button>
                         </div>
                     </form>
                 </div>
@@ -159,7 +199,7 @@
                                                     @if ($item->thumbnail)
                                                         <img id="thumbnail-preview-{{ $item->id }}"
                                                             src="{{ asset($item->thumbnail) }}" alt="Preview"
-                                                            style="margin-top:10px; max-width:100px;" />
+                                                            style="margin-top:10px; max-width:200px;" />
                                                     @endif
                                                 </div>
 
@@ -297,6 +337,63 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const thumbnailInput = document.getElementById('thumbnail');
+            const thumbnailPreview = document.getElementById('thumbnail-preview');
+
+            thumbnailInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        thumbnailPreview.src = e.target.result;
+                        thumbnailPreview.style.display = 'block';
+                    };
+
+                    reader.readAsDataURL(file);
+                } else {
+                    thumbnailPreview.src = '';
+                    thumbnailPreview.style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalUploadPhoto = new bootstrap.Modal(document.getElementById('modal-upload-photo'), {
+                backdrop: 'static',
+                keyboard: false
+            });
+
+            const modalElement = document.getElementById('modal-upload-photo');
+
+            modalElement.addEventListener('hide.bs.modal', function(event) {
+                const isFormDirty = checkFormChanges();
+
+                if (isFormDirty) {
+                    const confirmClose = confirm(
+                        'Anda memiliki perubahan yang belum disimpan. Apakah Anda yakin ingin menutup modal?'
+                        );
+                    if (!confirmClose) {
+                        event.preventDefault();
+                    }
+                }
+            });
+
+            function checkFormChanges() {
+                const name = document.getElementById('name').value;
+                const variasi = document.getElementById('variasi').value;
+                const linkUrl = document.getElementById('link_url').value;
+                const description = document.getElementById('description').value;
+
+                return name !== '' || variasi !== '' || linkUrl !== '' || description !== '';
+            }
+        });
+    </script>
+
+    <script>
         function showSmallModal(image, title, description, element) {
             document.getElementById('smallModalImage').src = image;
             document.getElementById('smallModalTitle').innerText = title;
@@ -358,74 +455,6 @@
     <script>
         var uploadedDocumentMap = {};
 
-        // Dropzone.options.photoDropzone = {
-        //     url: '{{ route('projects.storeMedia') }}',
-        //     paramName: "file_name[]",
-        //     maxFilesize: 2,
-        //     acceptedFiles: "image/*",
-        //     dictDefaultMessage: "Drop files here or click to upload",
-        //     addRemoveLinks: true,
-        //     headers: {
-        //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        //     },
-        //     success: function(file, response) {
-        //         $('form').append('<input type="hidden" name="file_name[]" value="' + response.file_name + '">');
-        //         uploadedDocumentMap[file.name] = response.file_name;
-
-        //         var fileNameLink = document.createElement("a");
-        //         fileNameLink.textContent = file.name;
-        //         fileNameLink.href = '{{ asset('uploads/file/dataPhotos') }}/' + response.file_name;
-        //         fileNameLink.target = "_blank";
-        //         fileNameLink.className = "link-style";
-
-        //         file.previewElement.querySelector(".dz-filename").innerHTML = '';
-        //         file.previewElement.querySelector(".dz-filename").appendChild(fileNameLink);
-        //     },
-
-        //     // success: function(file, response) {
-        //     //     $('form').append('<input type="hidden" name="file_name[]" value="' + response.name + '">');
-        //     //     uploadedDocumentMap[file.name] = response.name;
-
-        //     //     var fileNameLink = document.createElement("a");
-        //     //     fileNameLink.textContent = file.name;
-        //     //     fileNameLink.href = '{{ asset('uploads/file/photos') }}/' + response.name;
-        //     //     fileNameLink.target = "_blank";
-        //     //     fileNameLink.className = "link-style";
-
-        //     //     file.previewElement.querySelector(".dz-filename").innerHTML = '';
-        //     //     file.previewElement.querySelector(".dz-filename").appendChild(fileNameLink);
-        //     // },
-        //     removedfile: function(file) {
-        //         file.previewElement.remove();
-        //         var name = '';
-        //         if (typeof file.file_name !== 'undefined') {
-        //             name = file.file_name;
-        //         } else {
-        //             name = uploadedDocumentMap[file.name];
-        //         }
-        //         $('form').find('input[name="file_name[]"][value="' + name + '"]').remove();
-        //     },
-        //     init: function() {
-        //         @if (isset($project) && $project->file_name)
-        //             var files = {!! json_encode($project->file_name) !!};
-        //             for (var i in files) {
-        //                 var file = files[i];
-        //                 this.options.addedfile.call(this, file);
-        //                 file.previewElement.classList.add('dz-complete');
-        //                 $('form').append('<input type="hidden" name="file_name[]" value="' + file.file_name + '">');
-
-        //                 var fileNameLink = document.createElement("a");
-        //                 fileNameLink.textContent = file.file_name;
-        //                 fileNameLink.href = '{{ asset('uploads/file/photos') }}/' + file.file_name;
-        //                 fileNameLink.target = "_blank";
-        //                 fileNameLink.className = "link-style";
-
-        //                 file.previewElement.querySelector(".dz-filename").innerHTML = '';
-        //                 file.previewElement.querySelector(".dz-filename").appendChild(fileNameLink);
-        //             }
-        //         @endif
-        //     }
-        // };
         Dropzone.options.photoDropzone = {
             url: '{{ route('projects.storeMedia') }}',
             paramName: "file_name[]",
@@ -452,8 +481,30 @@
             },
             removedfile: function(file) {
                 file.previewElement.remove();
-                var name = uploadedDocumentMap[file.name];
-                $('form').find('input[name="file_name[]"][value="' + name + '"]').remove();
+                var name = '';
+                if (typeof file.file_name !== 'undefined') {
+                    name = file.file_name;
+                } else {
+                    name = uploadedDocumentMap[file.name];
+                }
+
+                $.ajax({
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    },
+                    type: 'POST',
+                    url: '{{ route('projects.deleteMedia') }}',
+                    data: {
+                        file_name: name
+                    },
+                    success: function(data) {
+                        console.log('File has been successfully removed!!');
+                    },
+                    error: function(e) {
+                        console.log('Error, file not removed!!');
+                    }
+                });
             },
         };
     </script>
@@ -462,6 +513,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             const description = document.getElementById('description');
             const charCount = document.getElementById('charCount');
+
+            description.addEventListener('input', function() {
+                charCount.textContent = `${description.value.length}/255 characters`;
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const description = document.getElementById('description1');
+            const charCount = document.getElementById('charCount1');
 
             description.addEventListener('input', function() {
                 charCount.textContent = `${description.value.length}/255 characters`;

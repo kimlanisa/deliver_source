@@ -19,7 +19,7 @@ class CreatePhotoKatalogTable extends Migration
             $table->unsignedBigInteger('childs_id')->nullable();
             $table->unsignedBigInteger('grand_childs_id')->nullable();
             $table->string('name');
-            $table->string('description');
+            $table->string('description')->nullable();
             $table->timestamps();
         });
     }

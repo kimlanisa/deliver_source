@@ -88,8 +88,10 @@
                         <div class="mb-3">
                             <label for="thumbnail" class="form-label">Thumbnail</label>
                             <input type="file" class="form-control" id="thumbnail" name="thumbnail" required>
-                            <img id="thumbnail-preview" src="#" alt="Preview"
-                                style="display:none; margin-top:10px; max-width:100px;" />
+                            <div class="mt-3">
+                                <img id="thumbnail-preview" src="" alt="Image Preview"
+                                    style="display:none; max-width: 200px;">
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="name" class="form-label">Judul</label>
@@ -97,8 +99,8 @@
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-                            <div id="charCount" class="form-text text-end">0/255 Characters</div>
+                            <textarea class="form-control" id="description1" name="description" rows="3" required></textarea>
+                            <div id="charCount1" class="form-text text-end">0/255 Characters</div>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <button type="submit" class="btn btn-primary">Create</button>
@@ -110,7 +112,7 @@
     </div>
 
     @if ($data->isNotEmpty())
-    <p class="mb-4">Folder Terbaru</p>
+        <p class="mb-4">Folder Terbaru</p>
         <div class="grid"
             data-masonry='{ "itemSelector": ".grid-item", "columnWidth": ".grid-sizer", "percentPosition": true }'>
             <div class="grid-sizer"></div>
@@ -162,7 +164,7 @@
                                                     @if ($item->thumbnail)
                                                         <img id="thumbnail-preview-{{ $item->id }}"
                                                             src="{{ asset($item->thumbnail) }}" alt="Preview"
-                                                            style="margin-top:10px; max-width:100px;" />
+                                                            style="margin-top:10px; max-width:200px;" />
                                                     @endif
                                                 </div>
 
@@ -279,10 +281,8 @@
                 </div>
             @endforeach
         </div>
-    @else
-        <p class="text-center">No photos available at the moment.</p>
     @endif
-        
+
     <div id="smallImageModal" onmouseenter="keepSmallModalVisible()" onmouseleave="hideSmallModal()"
         style="position: absolute; display: none;">
         <img id="smallModalImage"
@@ -294,6 +294,30 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const thumbnailInput = document.getElementById('thumbnail');
+            const thumbnailPreview = document.getElementById('thumbnail-preview');
+
+            thumbnailInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        thumbnailPreview.src = e.target.result;
+                        thumbnailPreview.style.display = 'block';
+                    };
+
+                    reader.readAsDataURL(file);
+                } else {
+                    thumbnailPreview.src = '';
+                    thumbnailPreview.style.display = 'none';
+                }
+            });
+        });
+    </script>
+    
     <script>
         function showSmallModal(image, title, description, element) {
             document.getElementById('smallModalImage').src = image;
@@ -464,13 +488,22 @@
                 charCount.textContent = `${description.value.length}/255 characters`;
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const description = document.getElementById('description1');
+            const charCount = document.getElementById('charCount1');
+
+            description.addEventListener('input', function() {
+                charCount.textContent = `${description.value.length}/255 characters`;
+            });
+        });
     </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const addButton = document.getElementById('add-variasi');
             const variationsList = document.getElementById('variasi-list');
-            let count = 1; 
+            let count = 1;
 
             addButton.addEventListener('click', function() {
                 const inputValue = document.getElementById('variasi').value;
@@ -482,9 +515,9 @@
                 const div = document.createElement('div');
                 div.className = 'input-group mb-2';
                 div.innerHTML = `
-        <input type="text" class="form-control" name="variasi[]" value="${inputValue}" readonly>
-        <button type="button" class="btn btn-outline-danger remove-variasi" data-id="${count}">-</button>
-    `;
+                    <input type="text" class="form-control" name="variasi[]" value="${inputValue}" readonly>
+                    <button type="button" class="btn btn-outline-danger remove-variasi" data-id="${count}">-</button>
+                `;
                 variationsList.appendChild(div);
 
                 document.getElementById('variasi').value = '';

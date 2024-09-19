@@ -16,7 +16,7 @@ class CreateVariasiTable extends Migration
         Schema::create('variasi', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('photo_id');
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->timestamps();
         });
     }

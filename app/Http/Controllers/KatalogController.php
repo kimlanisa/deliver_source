@@ -484,52 +484,60 @@ class KatalogController extends Controller
 
     public function storeDetailPhoto(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'variasi' => 'required|array',
-            'variasi.*' => 'string|max:255',
-            'description' => 'required|string|max:255',
-            'link_url' => 'required|string',
-            'file_name.*' => 'required|string',
-        ]);
-
-        $photoData = [
-            'name' => $request->name,
-            'description' => $request->description,
-            'link_url' => $request->link_url,
-        ];
-
-        if ($request->filled('parents_id')) {
-            $photoData['parents_id'] = $request->parents_id;
-        }
-
-        if ($request->filled('childs_id')) {
-            $photoData['childs_id'] = $request->childs_id;
-        }
-
-        if ($request->filled('grand_childs_id')) {
-            $photoData['grand_childs_id'] = $request->grand_childs_id;
-        }
-
-        $photo = PhotoKatalog::create($photoData);
-
-        foreach ($request->variasi as $variasi) {
-            Variasi::create([
-                'photo_id' => $photo->id,
-                'name' => $variasi,
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:255',
+                'link_url' => 'nullable|string',
+                'variasi.*' => 'nullable|string|max:255',
+                'file_name.*' => 'nullable|string',
             ]);
-        }
 
-        $fileNames = $request->input('file_name', []);
-        foreach ($fileNames as $fileName) {
-            FilePhoto::create([
-                'photo_id' => $photo->id,
-                'file_name' => $fileName,
-                'file_path' => 'uploads/file/photos/' . $fileName,
-            ]);
-        }
+            $photoData = [
+                'name' => $request->name,
+                'description' => $request->description,
+                'link_url' => $request->link_url,
+            ];
 
-        return redirect()->to(url()->previous())->with('success', 'Berhasil disimpan!');
+            if ($request->has('parents_id')) {
+                $photoData['parents_id'] = $request->parents_id;
+            }
+
+            if ($request->has('childs_id')) {
+                $photoData['childs_id'] = $request->childs_id;
+            }
+
+            if ($request->has('grand_childs_id')) {
+                $photoData['grand_childs_id'] = $request->grand_childs_id;
+            }
+
+            $photo = PhotoKatalog::create($photoData);
+
+            if ($request->has('variasi')) {
+                foreach ($request->variasi as $variasi) {
+                    if (!empty($variasi)) {
+                        $photo->variasi()->create([
+                            'name' => $variasi,
+                        ]);
+                    }
+                }
+            }
+
+            if ($request->has('file_name')) {
+                foreach ($request->file_name as $fileName) {
+                    FilePhoto::create([
+                        'photo_id' => $photo->id,
+                        'file_name' => $fileName,
+                        'file_path' => 'uploads/file/photos/' . $fileName,
+                    ]);
+                }
+            }
+
+            return redirect()->to(url()->previous())->with('success', 'Berhasil disimpan');
+        } catch (\Exception $e) {
+            Log::error("Error occurred while storing the data: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
+        }
     }
 
     public function deleteMedia(Request $request)
@@ -592,7 +600,7 @@ class KatalogController extends Controller
                 'name' => 'required|string|max:255',
                 'description' => 'required|string|max:255',
                 'link_url' => 'required|string',
-                'variasi.*' => 'nullable|string|max:255', // Validasi untuk variasi
+                'variasi.*' => 'nullable|string|max:255',
                 'file_name.*' => 'nullable|string',
             ]);
 
@@ -605,11 +613,9 @@ class KatalogController extends Controller
             $photo = PhotoKatalog::findOrFail($photoId);
             $photo->update($photoData);
 
-            // Update variasi yang ada
             if ($request->has('variasi')) {
                 foreach ($request->variasi as $variasi) {
                     if (!empty($variasi)) {
-                        // Tambahkan variasi baru jika tidak ada
                         $photo->variasi()->updateOrCreate(
                             ['name' => $variasi],
                             ['name' => $variasi]
@@ -618,7 +624,6 @@ class KatalogController extends Controller
                 }
             }
 
-            // Proses file yang di-upload
             $existingFiles = $photo->files->pluck('file_name')->toArray();
             $fileNames = $request->input('file_name', []);
             foreach ($fileNames as $fileName) {

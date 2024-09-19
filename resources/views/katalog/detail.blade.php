@@ -4,11 +4,11 @@
     <div class="dropdown">
         <button class="btn btn-primary rounded-circle d-flex justify-content-center align-items-center"
             style="position: fixed; bottom: 50px; right: 50px; width: 60px; height: 60px; font-size: 24px; z-index: 1000;"
-            id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+            data-bs-toggle="modal" data-bs-target="#modal-upload-photo">
             <i class="tf-icons bx bx-plus text-white"></i>
         </button>
 
-        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="z-index: 9999;">
+        {{-- <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="z-index: 9999;">
             <li>
                 <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
                     data-bs-target="#modal-create-folder">
@@ -21,7 +21,7 @@
                     <i class="tf-icons bx bx-image-add"></i> Upload Foto
                 </a>
             </li>
-        </ul>
+        </ul> --}}
     </div>
 
     <div class="modal fade" id="modal-upload-photo" tabindex="-1" aria-labelledby="modal-add-label" aria-hidden="true">
@@ -48,27 +48,27 @@
                         <input type="hidden" name="childs_id" id="hidden-childs-id" value="{{ $childs->id }}">
                         <div class="mb-3 mt-4">
                             <label for="name" class="form-label">Judul</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
+                            <input type="text" class="form-control" id="name" name="name">
                         </div>
                         <div class="mb-3">
                             <label for="variasi" class="form-label">Variasi</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="variasi" name="variasi[]" required>
-                                <button type="button" class="btn btn-outline-light" id="add-variasi">+</button>
+                                <input type="text" class="form-control" id="variasi" name="variasi[]">
+                                <button type="button" class="btn btn-primary" id="add-variasi">+</button>
                             </div>
                             <div id="variasi-list" class="mt-2"></div>
                         </div>
                         <div class="mb-3">
                             <label for="link_url" class="form-label">Link Url</label>
-                            <input type="text" class="form-control" id="link_url" name="link_url" required>
+                            <input type="text" class="form-control" id="link_url" name="link_url">
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" maxlength="255" required></textarea>
+                            <textarea class="form-control" id="description" name="description" rows="3" maxlength="255"></textarea>
                             <div id="charCount" class="form-text text-end">0/255 characters</div>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button type="submit" class="btn btn-primary">Create</button>
+                            <button type="submit" class="btn btn-primary">Upload</button>
                         </div>
                     </form>
                 </div>
@@ -76,7 +76,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal-create-folder" tabindex="-1" aria-labelledby="modal-add-label" aria-hidden="true">
+    {{-- <div class="modal fade" id="modal-create-folder" tabindex="-1" aria-labelledby="modal-add-label" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -106,7 +106,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     @include('layouts._message')
     <h4 class="mb-4">{{ $childs->name }}</h4>
@@ -120,8 +120,8 @@
 
                     <div class="d-flex justify-content-between">
                         <div class="dropdown" style="position: absolute; top: 8px; right: 8px;">
-                            <a href="javascript:void(0);" id="dropdownMenuLink{{ $item->id }}"
-                                data-bs-toggle="dropdown" aria-expanded="false" style="color: #000;">
+                            <a href="javascript:void(0);" id="dropdownMenuLink{{ $item->id }}" data-bs-toggle="dropdown"
+                                aria-expanded="false" style="color: #000;">
                                 <i class="bx bx-dots-vertical-rounded" style="font-size: 1.5rem;"></i>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ $item->id }}">
@@ -278,6 +278,75 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalUploadPhoto = new bootstrap.Modal(document.getElementById('modal-upload-photo'), {
+                backdrop: 'static',
+                keyboard: false
+            });
+
+            const modalElement = document.getElementById('modal-upload-photo');
+
+            modalElement.addEventListener('hide.bs.modal', function (event) {
+                const isFormDirty = checkFormChanges();
+
+                if (isFormDirty) {
+                    const confirmClose = confirm('Anda memiliki perubahan yang belum disimpan. Apakah Anda yakin ingin menutup modal?');
+                    if (!confirmClose) {
+                        event.preventDefault();
+                    }
+                }
+            });
+
+            function checkFormChanges() {
+                const name = document.getElementById('name').value;
+                const variasi = document.getElementById('variasi').value;
+                const linkUrl = document.getElementById('link_url').value;
+                const description = document.getElementById('description').value;
+
+                return name !== '' || variasi !== '' || linkUrl !== '' || description !== '';
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalUploadPhoto = document.getElementById('modal-upload-photo');
+            const dropzoneInstance = Dropzone.forElement("#photoDropzone");
+
+            modalUploadPhoto.addEventListener('hidden.bs.modal', function() {
+
+                dropzoneInstance.files.forEach(function(file) {
+                    dropzoneInstance.removeFile(file);
+                });
+                const dropzoneForm = document.getElementById('photoDropzone');
+                // const fallbackInput = dropzoneForm.querySelector('.fallback input');
+                // if (fallbackInput) {
+                //     fallbackInput.value = '';
+                // }
+                dropzoneForm.reset();
+
+                const photoDetailsForm = document.getElementById('photoDetailsForm');
+                photoDetailsForm.reset();
+
+                const variationsList = document.getElementById('variasi-list');
+                variationsList.innerHTML = '';
+
+                const charCount = document.getElementById('charCount');
+                if (charCount) {
+                    charCount.textContent = '0/255 characters';
+                }
+            });
+
+            $('#modal-upload-photo').on('hide.bs.modal', function() {
+                document.getElementById('photoDropzone').reset();
+                document.getElementById('photoDetailsForm').reset();
+                document.getElementById('variasi-list').innerHTML = '';
+                document.getElementById('charCount').textContent = '0/255 characters';
+            });
+        });
+    </script>
+
+    <script>
         function showSmallModal(image, title, description, element) {
             document.getElementById('smallModalImage').src = image;
             document.getElementById('smallModalTitle').innerText = title;
@@ -364,8 +433,30 @@
             },
             removedfile: function(file) {
                 file.previewElement.remove();
-                var name = uploadedDocumentMap[file.name];
-                $('form').find('input[name="file_name[]"][value="' + name + '"]').remove();
+                var name = '';
+                if (typeof file.file_name !== 'undefined') {
+                    name = file.file_name;
+                } else {
+                    name = uploadedDocumentMap[file.name];
+                }
+
+                $.ajax({
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    },
+                    type: 'POST',
+                    url: '{{ route('projects.deleteMedia') }}',
+                    data: {
+                        file_name: name
+                    },
+                    success: function(data) {
+                        console.log('File has been successfully removed!!');
+                    },
+                    error: function(e) {
+                        console.log('Error, file not removed!!');
+                    }
+                });
             },
         };
     </script>
@@ -406,41 +497,6 @@
                 count++;
             });
 
-            variationsList.addEventListener('click', function(e) {
-                if (e.target.classList.contains('remove-variasi')) {
-                    e.target.parentElement.remove();
-                }
-            });
-        });
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const addButton = document.getElementById('add-variasi-edit-{{ $data->id }}');
-            const variationsList = document.getElementById('variasi-list-edit-{{ $data->id }}');
-            let count = {{ count($data->variasi) }}; // jumlah variasi yang sudah ada
-
-            // Menambah variasi baru ke dalam list
-            addButton.addEventListener('click', function() {
-                const inputValue = document.getElementById('variasi-edit-{{ $data->id }}').value;
-                if (inputValue.trim() === '') {
-                    alert('Masukkan variasi terlebih dahulu.');
-                    return;
-                }
-
-                const div = document.createElement('div');
-                div.className = 'input-group mb-2';
-                div.innerHTML = `
-                <input type="text" class="form-control" name="variasi[]" value="${inputValue}" readonly>
-                <button type="button" class="btn btn-outline-danger remove-variasi" data-id="${count}">-</button>
-            `;
-                variationsList.appendChild(div);
-
-                document.getElementById('variasi-edit-{{ $data->id }}').value = '';
-                count++;
-            });
-
-            // Menghapus variasi dari list
             variationsList.addEventListener('click', function(e) {
                 if (e.target.classList.contains('remove-variasi')) {
                     e.target.parentElement.remove();
