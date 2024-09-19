@@ -301,7 +301,7 @@
 }
 
 .main-thumbnail {
-    width: 90%; /* Make sure the main image fills its container */
+    width: 95%; /* Make sure the main image fills its container */
     height: auto; /* Maintain aspect ratio */
     border-radius: 4px; /* Optional: Adds rounded corners */
 }
@@ -334,4 +334,52 @@
     margin-right: 5px;
     border-radius: 4px;
 }
+
+.thumbnail-img {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.3s;
+}
+
+.thumbnail-img.active {
+    border: 2px solid #007bff;
+    /* Or any color you prefer */
+    border-radius: 4px;
+}
+
+.dz-image {
+    width: 150px; /* Ubah sesuai kebutuhan */
+    height: 150px; /* Ubah sesuai kebutuhan */
+    overflow: hidden;
+}
+
+.dz-image img {
+    width: 100%; /* Mengatur gambar agar memenuhi kontainer */
+    height: auto; /* Mempertahankan rasio aspek gambar */
+}
+
+    .dz-preview {
+        position: relative;
+    }
+
+    .dz-delete {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background-color: #fff;
+        border: 2px solid #ddd;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .dz-delete i {
+        color: #ff0000;
+        font-size: 16px;
+    }
+
 

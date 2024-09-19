@@ -10,7 +10,7 @@ use App\Models\PhotoKatalog;
 use App\Models\Variasi;
 use Facade\FlareClient\Stacktrace\File;
 use Illuminate\Http\Request;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 class KatalogController extends Controller
 {
@@ -367,16 +367,43 @@ class KatalogController extends Controller
         }
     }
 
-    public function destroyPhoto($id)
+    public function destroyPhoto($photoId)
     {
         try {
-            $photo = PhotoKatalog::findOrFail($id);
+            $photo = PhotoKatalog::findOrFail($photoId);
+
+            $files = $photo->files;
+
+            foreach ($files as $file) {
+                $filePath = public_path($file->file_path);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+            }
+
             $photo->delete();
 
-            return redirect()->to(url()->previous())->with('success', 'Berhasil dihapus!');
+            return response()->json(['success' => true, 'message' => 'Photo deleted successfully.']);
         } catch (\Exception $e) {
-            \Log::error("Error occurred while deleting the data: " . $e->getMessage());
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus data.');
+            return response()->json(['success' => false, 'message' => 'Failed to delete photo.'], 500);
+        }
+    }
+
+    public function destroyPhotoDropzone($fileId)
+    {
+        try {
+            $file = FilePhoto::findOrFail($fileId);
+
+            // $filePath = public_path($file->file_path);
+            // if (file_exists($filePath)) {
+            //     unlink($filePath);
+            // }
+
+            $file->delete();
+
+            return response()->json(['success' => true, 'message' => 'File deleted successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Failed to delete file.'], 500);
         }
     }
 
@@ -501,61 +528,8 @@ class KatalogController extends Controller
                 'file_path' => 'uploads/file/photos/' . $fileName,
             ]);
         }
-        
+
         return redirect()->to(url()->previous())->with('success', 'Berhasil disimpan!');
-    }
-
-    public function updateDetailPhoto(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'variasi' => 'required|array',
-            'variasi.*' => 'string|max:255',
-            'description' => 'required|string|max:255',
-            'link_url' => 'required|string',
-            'file_name.*' => 'required|string',
-        ]);
-
-        $photoData = [
-            'name' => $request->name,
-            'description' => $request->description,
-            'link_url' => $request->link_url,
-        ];
-
-        if ($request->filled('parents_id')) {
-            $photoData['parents_id'] = $request->parents_id;
-        }
-
-        if ($request->filled('childs_id')) {
-            $photoData['childs_id'] = $request->childs_id;
-        }
-
-        if ($request->filled('grand_childs_id')) {
-            $photoData['grand_childs_id'] = $request->grand_childs_id;
-        }
-
-        $photo = PhotoKatalog::findOrFail($request->id);
-        $photo->update($photoData);
-
-        $photo->variasi()->delete();
-        foreach ($request->variasi as $variasi) {
-            Variasi::create([
-                'photo_id' => $photo->id,
-                'name' => $variasi,
-            ]);
-        }
-
-        $fileNames = $request->input('file_name', []);
-        $photo->files()->delete();
-        foreach ($fileNames as $fileName) {
-            FilePhoto::create([
-                'photo_id' => $photo->id,
-                'file_name' => $fileName,
-                'file_path' => 'uploads/file/photos/' . $fileName,
-            ]);
-        }
-
-        return redirect()->to(url()->previous())->with('success', 'Berhasil diupdate!');
     }
 
     public function deleteMedia(Request $request)
@@ -572,6 +546,108 @@ class KatalogController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => 'File not found.'], 404);
+    }
+
+    public function fetchPhotoData($photoId)
+    {
+        try {
+            $photo = PhotoKatalog::with(['files', 'variasi'])->findOrFail($photoId);
+
+            $responseData = [
+                'id' => $photo->id,
+                'name' => $photo->name,
+                'description' => $photo->description,
+                'link_url' => $photo->link_url,
+                'variasi' => $photo->variasi->map(function ($variasi) {
+                    return [
+                        'id' => $variasi->id,
+                        'name' => $variasi->name,
+                    ];
+                }),
+                'files' => $photo->files->map(function ($file) {
+                    return [
+                        'id' => $file->id,
+                        'file_name' => $file->file_name,
+                        'file_path' => asset($file->file_path),
+                    ];
+                }),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $responseData,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch photo data.',
+            ], 500);
+        }
+    }
+
+    public function updateDetailPhoto(Request $request, $photoId)
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'required|string|max:255',
+                'link_url' => 'required|string',
+                'variasi.*' => 'nullable|string|max:255', // Validasi untuk variasi
+                'file_name.*' => 'nullable|string',
+            ]);
+
+            $photoData = [
+                'name' => $request->name,
+                'description' => $request->description,
+                'link_url' => $request->link_url,
+            ];
+
+            $photo = PhotoKatalog::findOrFail($photoId);
+            $photo->update($photoData);
+
+            // Update variasi yang ada
+            if ($request->has('variasi')) {
+                foreach ($request->variasi as $variasi) {
+                    if (!empty($variasi)) {
+                        // Tambahkan variasi baru jika tidak ada
+                        $photo->variasi()->updateOrCreate(
+                            ['name' => $variasi],
+                            ['name' => $variasi]
+                        );
+                    }
+                }
+            }
+
+            // Proses file yang di-upload
+            $existingFiles = $photo->files->pluck('file_name')->toArray();
+            $fileNames = $request->input('file_name', []);
+            foreach ($fileNames as $fileName) {
+                if (!in_array($fileName, $existingFiles)) {
+                    FilePhoto::create([
+                        'photo_id' => $photo->id,
+                        'file_name' => $fileName,
+                        'file_path' => 'uploads/file/photos/' . $fileName,
+                    ]);
+                }
+            }
+
+            return redirect()->to(url()->previous())->with('success', 'Berhasil di update');
+        } catch (\Exception $e) {
+            Log::error("Error occurred while updating the data: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat mengupdate data.');
+        }
+    }
+
+    public function destroyVariation($variasiId)
+    {
+        try {
+            $variasi = Variasi::findOrFail($variasiId);
+            $variasi->delete();
+
+            return response()->json(['success' => true, 'message' => 'Variasi deleted successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Failed to delete variasi.'], 500);
+        }
     }
 
 }

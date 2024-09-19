@@ -237,7 +237,7 @@
                     <div class="grid-item card"
                         style="background-color: white; border-radius: 8px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); max-width: 180px; padding: 8px; position: relative;">
                         <div class="d-flex justify-content-between">
-                            <div class="dropdown" style="position: absolute; top: 8px; right: 8px;">
+                            {{-- <div class="dropdown" style="position: absolute; top: 8px; right: 8px;">
                                 <a href="javascript:void(0);" id="dropdownMenuLink{{ $data->id }}"
                                     data-bs-toggle="dropdown" aria-expanded="false" style="color: #000;">
                                     <i class="bx bx-dots-vertical-rounded" style="font-size: 1.5rem;"></i>
@@ -257,7 +257,7 @@
                                         </form>
                                     </li>
                                 </ul>
-                            </div>
+                            </div> --}}
 
                             <h5 class="card-title"
                                 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; text-align: left;">
@@ -473,7 +473,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const addButton = document.getElementById('add-variasi');
             const variationsList = document.getElementById('variasi-list');
-            let count = 1; 
+            let count = 1;
 
             addButton.addEventListener('click', function() {
                 const inputValue = document.getElementById('variasi').value;

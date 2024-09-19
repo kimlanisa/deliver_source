@@ -90,7 +90,12 @@ Route::put('katalog/update-folder-child/{id}', [App\Http\Controllers\KatalogCont
 Route::post('katalog/store-photo', [App\Http\Controllers\KatalogController::class, 'storePhoto'])->name('katalog.storePhoto');
 Route::post('katalog/store-detail-photo', [App\Http\Controllers\KatalogController::class, 'storeDetailPhoto'])->name('katalog.storeDetailPhoto');
 Route::put('katalog/update-detail-photo', [App\Http\Controllers\KatalogController::class, 'updateDetailPhoto'])->name('katalog.updateDetailPhoto');
-
+Route::get('/photos/{photoId}', [App\Http\Controllers\KatalogController::class, 'fetchPhotoData'])->name('photos.fetchPhotoData');
+// Route::post('katalog/update-media', [App\Http\Controllers\KatalogController::class, 'updateMedia'])->name('projects.updateMedia');
+Route::put('/katalog/updateDetailPhoto/{id}', [App\Http\Controllers\KatalogController::class, 'updateDetailPhoto'])->name('katalog.updateDetailPhoto');
+Route::delete('/photos/{photoId}', [App\Http\Controllers\KatalogController::class, 'destroyPhoto'])->name('photos.destroyPhoto');
+Route::post('/photos/{fileId}', [App\Http\Controllers\KatalogController::class, 'destroyPhotoDropzone'])->name('photos.destroyPhotoDropzone');
+Route::delete('variations/{variationId}', [App\Http\Controllers\KatalogController::class, 'destroyVariation'])->name('variations.destroyVariation');
 Route::get('/katalog/{parentId}/{childId}/detail', [App\Http\Controllers\KatalogController::class, 'detail'])->name('katalog.detail');
 Route::get('/katalog/{childId}', [App\Http\Controllers\KatalogController::class, 'childDetail'])->name('katalog.childDetail');
 Route::post('/update-parent', [App\Http\Controllers\KatalogController::class, 'update'])->name('update.parent');

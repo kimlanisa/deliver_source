@@ -239,26 +239,6 @@
                     <div class="grid-item card"
                         style="background-color: white; border-radius: 8px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); max-width: 180px; padding: 8px; position: relative;">
                         <div class="d-flex justify-content-between">
-                            <div class="dropdown" style="position: absolute; top: 8px; right: 8px;">
-                                <a href="javascript:void(0);" id="dropdownMenuLink{{ $data->id }}"
-                                    data-bs-toggle="dropdown" aria-expanded="false" style="color: #000;">
-                                    <i class="bx bx-dots-vertical-rounded" style="font-size: 1.5rem;"></i>
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ $data->id }}">
-                                    <li>
-                                        <a class="dropdown-item" data-bs-target="#modal-edit-photo-{{ $data->id }}"
-                                            data-bs-toggle="modal">Edit</a>
-                                    </li>
-                                    <li>
-                                        <form action="{{ route('katalog.destroyPhoto', ['id' => $data->id]) }}"
-                                            method="POST" onsubmit="return confirm('Yakin ingin menghapus item ini?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="dropdown-item">Hapus</button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
 
                             <h5 class="card-title"
                                 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; text-align: left;">
@@ -403,10 +383,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Menangani penambahan variasi
             const addButton = document.getElementById('add-variasi');
             const variationsList = document.getElementById('variasi-list');
-            let count = 1; // Untuk memastikan ID unik jika diperlukan
+            let count = 1;
 
             addButton.addEventListener('click', function() {
                 const inputValue = document.getElementById('variasi').value;
@@ -415,21 +394,18 @@
                     return;
                 }
 
-                // Membuat elemen variasi baru
                 const div = document.createElement('div');
                 div.className = 'input-group mb-2';
                 div.innerHTML = `
-        <input type="text" class="form-control" name="variasi[]" value="${inputValue}" readonly>
-        <button type="button" class="btn btn-outline-danger remove-variasi" data-id="${count}">-</button>
-    `;
+                    <input type="text" class="form-control" name="variasi[]" value="${inputValue}" readonly>
+                    <button type="button" class="btn btn-outline-danger remove-variasi" data-id="${count}">-</button>
+                `;
                 variationsList.appendChild(div);
 
-                // Reset input
                 document.getElementById('variasi').value = '';
                 count++;
             });
 
-            // Menangani penghapusan variasi
             variationsList.addEventListener('click', function(e) {
                 if (e.target.classList.contains('remove-variasi')) {
                     e.target.parentElement.remove();
@@ -437,4 +413,40 @@
             });
         });
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addButton = document.getElementById('add-variasi-edit-{{ $data->id }}');
+            const variationsList = document.getElementById('variasi-list-edit-{{ $data->id }}');
+            let count = {{ count($data->variasi) }}; // jumlah variasi yang sudah ada
+
+            // Menambah variasi baru ke dalam list
+            addButton.addEventListener('click', function() {
+                const inputValue = document.getElementById('variasi-edit-{{ $data->id }}').value;
+                if (inputValue.trim() === '') {
+                    alert('Masukkan variasi terlebih dahulu.');
+                    return;
+                }
+
+                const div = document.createElement('div');
+                div.className = 'input-group mb-2';
+                div.innerHTML = `
+                <input type="text" class="form-control" name="variasi[]" value="${inputValue}" readonly>
+                <button type="button" class="btn btn-outline-danger remove-variasi" data-id="${count}">-</button>
+            `;
+                variationsList.appendChild(div);
+
+                document.getElementById('variasi-edit-{{ $data->id }}').value = '';
+                count++;
+            });
+
+            // Menghapus variasi dari list
+            variationsList.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-variasi')) {
+                    e.target.parentElement.remove();
+                }
+            });
+        });
+    </script>
+
 @endsection
