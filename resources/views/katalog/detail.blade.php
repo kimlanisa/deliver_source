@@ -247,9 +247,9 @@
                         </div>
 
                         <div style="width: 100%; height: 150px; overflow: hidden; border-radius: 6px;">
-                            <img src="{{ asset($filePhoto->file_name) }}" alt="{{ $data->name }}"
+                            <img src="{{ asset($filePhoto->file_path) }}" alt="{{ $data->name }}"
                                 style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
-                                onmouseenter="showSmallModal('{{ asset($filePhoto->file_name) }}', '{{ $data->name }}', '{{ $data->description }}', this)"
+                                onmouseenter="showSmallModal('{{ asset($filePhoto->file_path) }}', '{{ $data->name }}', '{{ $data->description }}', this)"
                                 onmouseleave="hideSmallModal()"
                                 onclick="window.location.href='{{ route('katalog.photoDetail', ['photoId' => $data->id]) }}';">
                         </div>

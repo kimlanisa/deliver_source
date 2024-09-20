@@ -17,9 +17,9 @@ class KatalogController extends Controller
 
     public function index()
     {
-        $data = ParentsCategoriesKatalog::all();
+        $data = ParentsCategoriesKatalog::orderBy('id', 'desc')->get();
 
-        $photo = PhotoKatalog::with('files')->get();
+        $photo = PhotoKatalog::with('files')->orderBy('created_at', 'desc')->get();
 
         return view('katalog.index', compact('data', 'photo'));
     }
@@ -215,7 +215,7 @@ class KatalogController extends Controller
                 $file = $request->file('thumbnail');
                 $filename = 'thumbnail_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
                 $destinationPath = 'uploads/file/thumbnail';
-                $file->move(public_path($destinationPath), $filename);
+                $file->move($destinationPath, $filename);
                 $dataPost['thumbnail'] = $destinationPath . '/' . $filename;
             }
 
@@ -269,9 +269,9 @@ class KatalogController extends Controller
     {
         $parents = ParentsCategoriesKatalog::where('id', $id)->with('childs')->firstOrFail();
 
-        $dataPhotos = PhotoKatalog::where('parents_id', $id)->get();
+        $dataPhotos = PhotoKatalog::where('parents_id', $id)->orderBy('created_at', 'desc')->get();
 
-        $photos = FilePhoto::whereIn('photo_id', $dataPhotos->pluck('id'))->get();
+        $photos = FilePhoto::whereIn('photo_id', $dataPhotos->pluck('id'))->orderBy('created_at', 'desc')->get();
 
         return view('katalog.show', compact('parents', 'photos', 'dataPhotos'));
     }
@@ -286,9 +286,9 @@ class KatalogController extends Controller
             ->with('grand_childs')
             ->firstOrFail();
 
-        $dataPhotos = PhotoKatalog::where('childs_id', $childId)->get();
+        $dataPhotos = PhotoKatalog::where('childs_id', $childId)->orderBy('created_at', 'desc')->get();
 
-        $photos = FilePhoto::whereIn('photo_id', $dataPhotos->pluck('id'))->get();
+        $photos = FilePhoto::whereIn('photo_id', $dataPhotos->pluck('id'))->orderBy('created_at', 'desc')->get();
 
         return view('katalog.detail', compact('childs', 'parents', 'photos', 'dataPhotos'));
     }
@@ -375,7 +375,7 @@ class KatalogController extends Controller
             $files = $photo->files;
 
             foreach ($files as $file) {
-                $filePath = public_path($file->file_path);
+                $filePath = $file->file_path;
                 if (file_exists($filePath)) {
                     unlink($filePath);
                 }
@@ -461,7 +461,7 @@ class KatalogController extends Controller
                 foreach ($request->file('file_name') as $file) {
                     $filename = 'photo_' . time() . rand(1, 9999) . '.' . $file->getClientOriginalExtension();
                     $destinationPath = 'uploads/file/photos';
-                    $file->move(public_path($destinationPath), $filename);
+                    $file->move($destinationPath, $filename);
 
                     $fileData[] = [
                         'file_name' => $filename,
@@ -543,12 +543,11 @@ class KatalogController extends Controller
     public function deleteMedia(Request $request)
     {
         $fileName = $request->input('file_name');
-        $filePath = public_path('uploads/file/photos/' . $fileName);
+
+        $filePath = 'uploads/file/photos/' . $fileName;
 
         if (file_exists($filePath)) {
             unlink($filePath);
-
-            FilePhoto::where('file_name', $fileName)->delete();
 
             return response()->json(['success' => true, 'message' => 'File deleted successfully.']);
         }
@@ -575,7 +574,7 @@ class KatalogController extends Controller
                 'files' => $photo->files->map(function ($file) {
                     return [
                         'id' => $file->id,
-                        'file_name' => $file->file_name,
+                        'file_name' => asset($file->file_path),
                         'file_path' => asset($file->file_path),
                     ];
                 }),

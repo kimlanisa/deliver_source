@@ -6,14 +6,14 @@
         <div class="row">
             <div class="col-md-12 d-flex">
                 <div class="main-image" style="flex: 1;">
-                    <img id="mainImage" src="{{ $thumbnailImage->file_name }}" alt="Main Thumbnail"
+                    <img id="mainImage" src="{{ asset($thumbnailImage->file_path) }}" alt="Main Thumbnail"
                         class="img-fluid main-thumbnail">
 
                     <div class="photo-thumbnails mt-2 d-flex flex-wrap">
                         @foreach ($mainImages as $image)
                             <div class="photo-thumbnail mr-2">
-                                <img src="{{ $image->file_name }}" alt="{{ $photo->name }}" class="img-fluid thumbnail-img"
-                                    data-large="{{ $image->file_name }}">
+                                <img src="{{ asset($image->file_path) }}" alt="{{ $photo->name }}" class="img-fluid thumbnail-img"
+                                    data-large="{{ asset($image->file_path) }}">
                             </div>
                         @endforeach
                     </div>
@@ -80,15 +80,17 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="edit-description" class="form-label">Description</label>
-                            <textarea class="form-control" id="edit-description" name="description" rows="3" maxlength="255" required></textarea>
-                            <div id="charCount" class="form-text text-end">0/255 characters</div>
+                            <label for="edit-link_url" class="form-label">Link Url</label>
+                            <input type="text" class="form-control" id="edit-link_url" name="link_url">
                         </div>
 
                         <div class="mb-3">
-                            <label for="edit-link_url" class="form-label">Link Url</label>
-                            <input type="text" class="form-control" id="edit-link_url" name="link_url" required>
+                            <label for="edit-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="edit-description" name="description" rows="3" maxlength="255"></textarea>
+                            <div id="charCount" class="form-text text-end">0/255 characters</div>
                         </div>
+
+
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -182,7 +184,6 @@
                                         'variasi-list-edit');
                                     variasiContainer.innerHTML =
                                         '';
-
 
                                     photoData.variasi.forEach((variasi) => {
                                         const name = variasi.name || '';
@@ -333,7 +334,7 @@
                 editModal.show();
             });
 
-           
+
             document.getElementById('add-variasi-edit').addEventListener('click', function() {
                 const input = document.getElementById('variasi-edit');
                 const value = input.value.trim();
@@ -346,11 +347,11 @@
                     <button type="button" class="btn btn-outline-danger remove-variasi">-</button>
                 `;
                     variationsList.appendChild(div);
-                    input.value = ''; 
+                    input.value = '';
                 }
             });
 
-          
+
             document.getElementById('variasi-list-edit').addEventListener('click', function(event) {
                 if (event.target.classList.contains('remove-variasi')) {
                     event.target.parentElement.remove();

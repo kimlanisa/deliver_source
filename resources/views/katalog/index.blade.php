@@ -52,18 +52,18 @@
                         <div class="mb-3">
                             <label for="variasi" class="form-label">Variasi</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="variasi" name="variasi[]" required>
+                                <input type="text" class="form-control" id="variasi" name="variasi[]">
                                 <button type="button" class="btn btn-outline-light" id="add-variasi">+</button>
                             </div>
                             <div id="variasi-list" class="mt-2"></div>
                         </div>
                         <div class="mb-3">
                             <label for="link_url" class="form-label">Link Url</label>
-                            <input type="text" class="form-control" id="link_url" name="link_url" required>
+                            <input type="text" class="form-control" id="link_url" name="link_url">
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" maxlength="255" required></textarea>
+                            <textarea class="form-control" id="description" name="description" rows="3" maxlength="255"></textarea>
                             <div id="charCount" class="form-text text-end">0/255 characters</div>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -111,6 +111,7 @@
         </div>
     </div>
 
+    @include('layouts._message')
     @if ($data->isNotEmpty())
         <p class="mb-4">Folder Terbaru</p>
         <div class="grid"
@@ -238,38 +239,22 @@
                 <div class="grid-item card"
                     style="background-color: white; border-radius: 8px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); max-width: 180px; padding: 8px; position: relative;">
 
-                    {{-- <div class="dropdown" style="position: absolute; top: 8px; right: 8px;">
-                        <a href="javascript:void(0);" id="dropdownMenuLink{{ $data->id }}" data-bs-toggle="dropdown"
-                            aria-expanded="false" style="color: #000;">
-                            <i class="bx bx-dots-vertical-rounded" style="font-size: 1.5rem;"></i>
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ $data->id }}">
-                            <li>
-                                <a class="dropdown-item" data-bs-target="#modal-edit-photo-{{ $data->id }}"
-                                    data-bs-toggle="modal">Edit</a>
-                            </li>
-                            <li>
-                                <form action="{{ route('katalog.destroyPhoto', ['id' => $data->id]) }}" method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus item ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="dropdown-item">Hapus</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div> --}}
-
                     <h5 class="card-title"
                         style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; text-align: left;">
                         {{ Str::limit($data->name, 18) }}
                     </h5>
 
                     <div style="width: 100%; height: 150px; overflow: hidden; border-radius: 6px;">
-                        <img src="{{ asset($data->files->first()->file_name) }}" alt="{{ $data->name }}"
-                            style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
-                            onmouseenter="showSmallModal('{{ asset($data->files->first()->file_name) }}', '{{ $data->name }}', '{{ $data->description }}', this)"
-                            onmouseleave="hideSmallModal()"
-                            onclick="window.location.href='{{ route('katalog.photoDetail', ['photoId' => $data->id]) }}';">
+                        @if ($data->files->isNotEmpty())
+                            <img src="{{ asset($data->files->first()->file_path) }}" alt="{{ $data->name }}"
+                                style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+                                onmouseenter="showSmallModal('{{ asset($data->files->first()->file_path) }}', '{{ addslashes($data->name) }}', '{{ addslashes($data->description) }}', this)"
+                                onmouseleave="hideSmallModal()"
+                                onclick="window.location.href='{{ route('katalog.photoDetail', ['photoId' => $data->id]) }}';">
+                        @else
+                            <img src="{{ asset('path/to/default/image.jpg') }}" alt="No Image Available"
+                                style="width: 100%; height: 100%; object-fit: cover;">
+                        @endif
                     </div>
 
                     <div class="card-body" style="padding: 8px;">
@@ -282,6 +267,7 @@
             @endforeach
         </div>
     @endif
+
 
     <div id="smallImageModal" onmouseenter="keepSmallModalVisible()" onmouseleave="hideSmallModal()"
         style="position: absolute; display: none;">
@@ -317,7 +303,40 @@
             });
         });
     </script>
-    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalUploadPhoto = new bootstrap.Modal(document.getElementById('modal-upload-photo'), {
+                backdrop: 'static',
+                keyboard: false
+            });
+
+            const modalElement = document.getElementById('modal-upload-photo');
+
+            modalElement.addEventListener('hide.bs.modal', function(event) {
+                const isFormDirty = checkFormChanges();
+
+                if (isFormDirty) {
+                    const confirmClose = confirm(
+                        'Anda memiliki perubahan yang belum disimpan. Apakah Anda yakin ingin menutup modal?'
+                    );
+                    if (!confirmClose) {
+                        event.preventDefault();
+                    }
+                }
+            });
+
+            function checkFormChanges() {
+                const name = document.getElementById('name').value;
+                const variasi = document.getElementById('variasi').value;
+                const linkUrl = document.getElementById('link_url').value;
+                const description = document.getElementById('description').value;
+
+                return name !== '' || variasi !== '' || linkUrl !== '' || description !== '';
+            }
+        });
+    </script>
+
     <script>
         function showSmallModal(image, title, description, element) {
             document.getElementById('smallModalImage').src = image;
@@ -379,74 +398,6 @@
     <script>
         var uploadedDocumentMap = {};
 
-        // Dropzone.options.photoDropzone = {
-        //     url: '{{ route('projects.storeMedia') }}',
-        //     paramName: "file_name[]",
-        //     maxFilesize: 2,
-        //     acceptedFiles: "image/*",
-        //     dictDefaultMessage: "Drop files here or click to upload",
-        //     addRemoveLinks: true,
-        //     headers: {
-        //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        //     },
-        //     success: function(file, response) {
-        //         $('form').append('<input type="hidden" name="file_name[]" value="' + response.file_name + '">');
-        //         uploadedDocumentMap[file.name] = response.file_name;
-
-        //         var fileNameLink = document.createElement("a");
-        //         fileNameLink.textContent = file.name;
-        //         fileNameLink.href = '{{ asset('uploads/file/dataPhotos') }}/' + response.file_name;
-        //         fileNameLink.target = "_blank";
-        //         fileNameLink.className = "link-style";
-
-        //         file.previewElement.querySelector(".dz-filename").innerHTML = '';
-        //         file.previewElement.querySelector(".dz-filename").appendChild(fileNameLink);
-        //     },
-
-        //     // success: function(file, response) {
-        //     //     $('form').append('<input type="hidden" name="file_name[]" value="' + response.name + '">');
-        //     //     uploadedDocumentMap[file.name] = response.name;
-
-        //     //     var fileNameLink = document.createElement("a");
-        //     //     fileNameLink.textContent = file.name;
-        //     //     fileNameLink.href = '{{ asset('uploads/file/photos') }}/' + response.name;
-        //     //     fileNameLink.target = "_blank";
-        //     //     fileNameLink.className = "link-style";
-
-        //     //     file.previewElement.querySelector(".dz-filename").innerHTML = '';
-        //     //     file.previewElement.querySelector(".dz-filename").appendChild(fileNameLink);
-        //     // },
-        //     removedfile: function(file) {
-        //         file.previewElement.remove();
-        //         var name = '';
-        //         if (typeof file.file_name !== 'undefined') {
-        //             name = file.file_name;
-        //         } else {
-        //             name = uploadedDocumentMap[file.name];
-        //         }
-        //         $('form').find('input[name="file_name[]"][value="' + name + '"]').remove();
-        //     },
-        //     init: function() {
-        //         @if (isset($project) && $project->file_name)
-        //             var files = {!! json_encode($project->file_name) !!};
-        //             for (var i in files) {
-        //                 var file = files[i];
-        //                 this.options.addedfile.call(this, file);
-        //                 file.previewElement.classList.add('dz-complete');
-        //                 $('form').append('<input type="hidden" name="file_name[]" value="' + file.file_name + '">');
-
-        //                 var fileNameLink = document.createElement("a");
-        //                 fileNameLink.textContent = file.file_name;
-        //                 fileNameLink.href = '{{ asset('uploads/file/photos') }}/' + file.file_name;
-        //                 fileNameLink.target = "_blank";
-        //                 fileNameLink.className = "link-style";
-
-        //                 file.previewElement.querySelector(".dz-filename").innerHTML = '';
-        //                 file.previewElement.querySelector(".dz-filename").appendChild(fileNameLink);
-        //             }
-        //         @endif
-        //     }
-        // };
         Dropzone.options.photoDropzone = {
             url: '{{ route('projects.storeMedia') }}',
             paramName: "file_name[]",
@@ -473,8 +424,30 @@
             },
             removedfile: function(file) {
                 file.previewElement.remove();
-                var name = uploadedDocumentMap[file.name];
-                $('form').find('input[name="file_name[]"][value="' + name + '"]').remove();
+                var name = '';
+                if (typeof file.file_name !== 'undefined') {
+                    name = file.file_name;
+                } else {
+                    name = uploadedDocumentMap[file.name];
+                }
+
+                $.ajax({
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    },
+                    type: 'POST',
+                    url: '{{ route('projects.deleteMedia') }}',
+                    data: {
+                        file_name: name
+                    },
+                    success: function(data) {
+                        console.log('File has been successfully removed!!');
+                    },
+                    error: function(e) {
+                        console.log('Error, file not removed!!');
+                    }
+                });
             },
         };
     </script>

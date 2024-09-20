@@ -19,11 +19,12 @@ class FilePhoto extends Model
 
     public function getFileNameAttribute($value)
     {
-        return asset('uploads/file/photos/' . $value);
+        return $value;
     }
 
     public function getFilePathAttribute($value)
     {
-        return asset('uploads/file/photos/' . $value);
+        return $value;
     }
+
 }
