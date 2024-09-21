@@ -4,11 +4,11 @@
     <div class="dropdown">
         <button class="btn btn-primary rounded-circle d-flex justify-content-center align-items-center"
             style="position: fixed; bottom: 50px; right: 50px; width: 60px; height: 60px; font-size: 24px; z-index: 1000;"
-            data-bs-toggle="modal" data-bs-target="#modal-upload-photo">
+            id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="tf-icons bx bx-plus text-white"></i>
         </button>
 
-        {{-- <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="z-index: 9999;">
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="z-index: 9999;">
             <li>
                 <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
                     data-bs-target="#modal-create-folder">
@@ -21,7 +21,7 @@
                     <i class="tf-icons bx bx-image-add"></i> Upload Foto
                 </a>
             </li>
-        </ul> --}}
+        </ul>
     </div>
 
     <div class="modal fade" id="modal-upload-photo" tabindex="-1" aria-labelledby="modal-add-label" aria-hidden="true">
@@ -76,7 +76,7 @@
         </div>
     </div>
 
-    {{-- <div class="modal fade" id="modal-create-folder" tabindex="-1" aria-labelledby="modal-add-label" aria-hidden="true">
+    <div class="modal fade" id="modal-create-folder" tabindex="-1" aria-labelledby="modal-add-label" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -106,7 +106,7 @@
                 </div>
             </div>
         </div>
-    </div> --}}
+    </div>
 
     @include('layouts._message')
     <h4 class="mb-4">{{ $childs->name }}</h4>
